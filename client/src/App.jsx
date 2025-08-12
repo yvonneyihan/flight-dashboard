@@ -7,7 +7,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import EditFlight from './pages/EditFlight';
-import ErrorPage from './pages/ErrorPage';
 import HeatAirportMap from './pages/HeatAirportMap';
 import FlightReviews from './pages/FlightReviews';
 
@@ -23,7 +22,6 @@ const App = () => {
         <Route path="/users/register" element={<Register />} />
         <Route path="/users/dashboard" element={<Dashboard />} />
         <Route path="/users/manual-flights/edit/:id" element={<EditFlight />} />
-        <Route path="/error" element={<ErrorPage />} />
         <Route path="/heatmap" element={<HeatAirportMap />} />
         <Route path="/flights/:flightID/reviews" element={<FlightReviews />} />
       </Routes>
