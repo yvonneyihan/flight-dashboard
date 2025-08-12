@@ -1,0 +1,10 @@
+#map {
+  height: 90vh;
+  width: 100%;
+  z-index: 0 !important;
+  position: relative !important;
+}
+.leaflet-container {
+  touch-action: auto !important;
+  cursor: grab !important;
+}

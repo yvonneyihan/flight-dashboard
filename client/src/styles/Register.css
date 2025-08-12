@@ -1,0 +1,22 @@
+.container {
+  max-width: 400px;
+  margin: 50px auto;
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.register-link {
+  display: block;
+  margin-top: 15px;
+  text-align: center;
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.error-msg {
+  color: red;
+  margin-top: 10px;
+  text-align: center;
+}

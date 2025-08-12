@@ -1,0 +1,80 @@
+.reviews-container {
+  padding: 30px;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.review-table {
+  margin: 20px auto;
+  width: 80%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.review-table th {
+  background-color: #1a73e8;
+  color: white;
+  padding: 10px;
+}
+
+.review-table td {
+  padding: 8px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.no-reviews {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 18px;
+  color: gray;
+}
+
+.review-form-section {
+  text-align: center;
+  margin-top: 40px;
+}
+
+.review-form textarea {
+  padding: 10px;
+  border-radius: 6px;
+  width: 400px;
+}
+
+.review-form select {
+  padding: 5px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.review-form button {
+  padding: 10px 20px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin-top: 15px;
+}
+
+.note {
+  margin-top: 10px;
+  color: gray;
+}
+
+.login-warning {
+  color: red;
+  font-size: 16px;
+}
+
+.back-button {
+  padding: 10px 20px;
+  background-color: #ccc;
+  color: black;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.submit-button {
+  cursor: pointer;
+  font-size: 13px;
+}
