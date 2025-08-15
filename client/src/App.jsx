@@ -18,10 +18,10 @@ const App = () => {
       <ToastContainer position="top-center" autoClose={2000} />
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/users/login" element={<Login />} />
-        <Route path="/users/register" element={<Register />} />
-        <Route path="/users/dashboard" element={<Dashboard />} />
-        <Route path="/users/manual-flights/edit/:id" element={<EditFlight />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/manual-flights/edit/:id" element={<EditFlight />} />
         <Route path="/heatmap" element={<HeatAirportMap />} />
         <Route path="/flights/:flightID/reviews" element={<FlightReviews />} />
       </Routes>
