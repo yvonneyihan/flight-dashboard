@@ -17,25 +17,36 @@ const Dashboard = () => {
   });
   const navigate = useNavigate();
 
+  // Fetch manual flights only
+  const fetchFlights = async () => {
+    try {
+      const manualsRes = await fetch('/api/users/manual-flights', { credentials: 'include' });
+      const manualsData = await manualsRes.json();
+      setManuals(manualsData);
+    } catch (err) {
+      console.error('❌ Fetch flights failed:', err);
+    }
+  };
+
   // Fetch data from backend
   useEffect(() => {
     const checkAndFetch = async () => {
       try {
         // Check session
-        const res = await fetch('/users/check-auth', { credentials: 'include' });
+        const res = await fetch('/api/users/check-auth', { credentials: 'include' });
         const data = await res.json();
         if (!data.authenticated) {
-          window.location.href = '/users/login'; 
+          window.location.href = '/api/users/login'; 
           return;
         }
 
         // Fetch searches
-        const searchesRes = await fetch('/users/searches', { credentials: 'include' });
+        const searchesRes = await fetch('/api/users/searches', { credentials: 'include' });
         const searchesData = await searchesRes.json();
         setSearches(searchesData);
 
         // Fetch manual flights
-        const manualsRes = await fetch('/users/manual-flights', { credentials: 'include' });
+        const manualsRes = await fetch('/api/users/manual-flights', { credentials: 'include' });
         const manualsData = await manualsRes.json();
         setManuals(manualsData);
       } catch (err) {
@@ -53,18 +64,32 @@ const Dashboard = () => {
 
   const handleManualFlightSubmit = (e) => {
     e.preventDefault();
-    fetch('/users/manual-flight', {
+    fetch('/api/users/manual-flight', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
     })
-      .then(() => window.location.reload())
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          fetchFlights(); 
+          setForm({
+            FlightID: '',
+            Airline: '',
+            ScheduledDeparture: '',
+            ScheduledArrival: '',
+            DepartureAirport: '',
+            ArrivalAirport: '',
+            Note: ''
+          })
+        }
+      })
       .catch(console.error);
   };
 
   const handleSearchAgain = async (id) => {
     try {
-      const res = await fetch(`/users/search-again/${id}`, {
+      const res = await fetch(`/api/users/search-again/${id}`, {
         method: 'GET',
         credentials: 'include'
       });
@@ -83,7 +108,7 @@ const Dashboard = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure?')) return;
     try {
-      const res = await fetch(`/users/manual-flight/${id}`, {
+      const res = await fetch(`/api/users/manual-flight/${id}`, {
         method: 'DELETE',
       });
 
@@ -100,7 +125,7 @@ const Dashboard = () => {
   const handleLogout = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('/users/logout', {
+      const res = await fetch('/api/users/logout', {
         method: 'GET',
         credentials: 'include',
       });
@@ -202,7 +227,7 @@ const Dashboard = () => {
                   >
                     Delete
                   </button>
-                  <Link to={`/users/manual-flights/edit/${m.id}`}>
+                  <Link to={`/manual-flights/edit/${m.id}`}>
                     <button>Edit</button>
                   </Link>
                 </td>
@@ -274,7 +299,7 @@ const Dashboard = () => {
               name="DepartureAirport"
               value={form.DepartureAirport}
               onChange={handleChange}
-              fetchUrl="/users/autocomplete"
+              fetchUrl="/api/users/autocomplete"
               required
             />
           </div>
@@ -285,7 +310,7 @@ const Dashboard = () => {
               name="ArrivalAirport"
               value={form.ArrivalAirport}
               onChange={handleChange}
-              fetchUrl="/users/autocomplete"
+              fetchUrl="/api/users/autocomplete"
               required
             />
           </div>

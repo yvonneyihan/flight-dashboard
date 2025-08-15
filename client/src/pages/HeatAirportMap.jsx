@@ -35,7 +35,7 @@ const HeatAirportMap = () => {
       }).addTo(map);
 
       try {
-        const response = await fetch('/api/popular_airports');;
+        const response = await fetch('/api/popular-map');;
         if (!response.ok) throw new Error('Failed to fetch airports and routes');
         const { airports, routes } = await response.json();
 

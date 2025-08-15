@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import '../styles/EditFlight.css';
+import AutocompleteInput from '../components/Autocomplete';
 
 const EditFlight = () => {
   const { id } = useParams();
@@ -17,7 +18,7 @@ const EditFlight = () => {
   const [suggestions, setSuggestions] = useState({ DepartureAirport: [], ArrivalAirport: [] });
 
   useEffect(() => {
-    fetch(`/users/manual-flights/${id}`) 
+    fetch(`/api/users/manual-flights/${id}`) 
       .then((res) => res.json())
       .then((data) => {
         setFlight({
@@ -40,34 +41,19 @@ const EditFlight = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/users/manual-flight/${id}`, {
+      const res = await fetch(`/api/users/manual-flight/${id}`, {
         method: 'PUT', 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(flight),
       });
 
       if (res.ok) {
-        navigate('/users/dashboard'); // redirect after success
+        navigate('/dashboard');
       } else {
         console.error('❌ Update failed');
       }
     } catch (err) {
       console.error('❌ Error submitting form:', err);
-    }
-  };
-
-  const handleAutocomplete = async (field, value) => {
-    if (!value.trim()) {
-      setSuggestions(prev => ({ ...prev, [field]: [] }));
-      return;
-    }
-
-    try {
-      const res = await fetch(`/users/autocomplete?query=${encodeURIComponent(value)}`);
-      const data = await res.json();
-      setSuggestions(prev => ({ ...prev, [field]: data }));
-    } catch (err) {
-      console.error('❌ Autocomplete error:', err);
     }
   };
 
@@ -79,74 +65,32 @@ const EditFlight = () => {
         <input type="text" name="Airline" value={flight.Airline} onChange={handleChange} required placeholder="Airline" />
         <input type="datetime-local" name="ScheduledDeparture" value={flight.ScheduledDeparture} onChange={handleChange} required />
         <input type="datetime-local" name="ScheduledArrival" value={flight.ScheduledArrival} onChange={handleChange} />
-        <div className="autocomplete-group"
-            onBlur={() => setTimeout(() =>
-              setSuggestions(prev => ({ ...prev, DepartureAirport: [] })), 100)}>
-          <input
+        <div className="form-group">
+          <AutocompleteInput
+            label="Departure Airport"
             name="DepartureAirport"
             value={flight.DepartureAirport}
-            onChange={(e) => {
-              handleChange(e); // updates flight state
-              handleAutocomplete('DepartureAirport', e.target.value);
-            }}
-            placeholder="Departure Airport (IATA or city)"
-            className="form-control"
-            autoComplete="off"
+            onChange={handleChange}
+            fetchUrl="/api/users/autocomplete"
+            required
           />
-          {suggestions.DepartureAirport.length > 0 && (
-            <div className="suggestions">
-              {suggestions.DepartureAirport.map((s, i) => (
-                <div
-                  key={i}
-                  className="suggestion-item"
-                  onMouseDown={() => {
-                    setFlight(prev => ({ ...prev, DepartureAirport: s.code }));
-                    setSuggestions(prev => ({ ...prev, DepartureAirport: [] }));
-                  }}
-                >
-                  {s.name} ({s.code})
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
-        <div className="autocomplete-group"
-            onBlur={() => setTimeout(() =>
-              setSuggestions(prev => ({ ...prev, ArrivalAirport: [] })), 100)}>
-          <input
+        <div className="form-group">
+          <AutocompleteInput
+            label="Arrival Airport"
             name="ArrivalAirport"
             value={flight.ArrivalAirport}
-            onChange={(e) => {
-              handleChange(e); // updates flight state
-              handleAutocomplete('ArrivalAirport', e.target.value);
-            }}
-            placeholder="Arrival Airport (IATA or city)"
-            className="form-control"
-            autoComplete="off"
+            onChange={handleChange}
+            fetchUrl="/api/users/autocomplete"
+            required
           />
-          {suggestions.ArrivalAirport.length > 0 && (
-            <div className="suggestions">
-              {suggestions.ArrivalAirport.map((s, i) => (
-                <div
-                  key={i}
-                  className="suggestion-item"
-                  onMouseDown={() => {
-                    setFlight(prev => ({ ...prev, ArrivalAirport: s.code }));
-                    setSuggestions(prev => ({ ...prev, ArrivalAirport: [] }));
-                  }}
-                >
-                  {s.name} ({s.code})
-                </div>
-              ))}
-            </div>
-          )}
         </div>
         <input type="text" name="Note" value={flight.Note} onChange={handleChange} placeholder="Note" />
         <button type="submit">Save Changes</button>
       </form>
       <div className="back-link">
-        <a href="/users/dashboard">Back to Dashboard</a>
+        <a href="/dashboard">Back to Dashboard</a>
       </div>
     </div>
   );

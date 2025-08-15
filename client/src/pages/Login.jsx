@@ -14,7 +14,7 @@ const Login = () => {
     console.log("Submitting login...");
 
     try {
-      const res = await fetch('/users/login', {
+      const res = await fetch('/api/users/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
@@ -38,7 +38,7 @@ const Login = () => {
       // Success
       const data = await res.json();
       localStorage.setItem('userId', data.userId || '1');
-      navigate('/users/dashboard');
+      navigate('/dashboard');
 
     } catch (err) {
       console.error('Login error:', err);
@@ -73,7 +73,7 @@ const Login = () => {
       {error && <p className="error">{error}</p>}
 
       <div>
-        <Link to="/users/register" className="register-link">Need an account? Register here</Link>
+        <Link to="/register" className="register-link">Need an account? Register here</Link>
       </div>
     </div>
   );

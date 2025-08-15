@@ -20,7 +20,7 @@ const Register = () => {
   const handleSubmit = async e => {
     e.preventDefault();
     try {
-      const response = await fetch('/users/register', {
+      const response = await fetch('/api/users/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -29,11 +29,11 @@ const Register = () => {
       });
 
       if (response.ok) {
-        navigate('/users/login');
+        navigate('/login');
       } else if (response.status === 409) {
         const data = await response.json();
         alert(data.error || 'Email already registered. Please log in.');
-        navigate('/users/login'); 
+        navigate('/login'); 
       } else {
         const data = await response.json();
         setError(data.error || 'Registration failed.');
@@ -76,8 +76,7 @@ const Register = () => {
       </form>
       {error && <p className="error-msg">{error}</p>}
       <div>
-        {/* <a href="/users/login" className="register-link"></a> */}
-        <Link to="/users/login" className="register-link">Already have an account? Login here</Link>
+        <Link to="/login" className="register-link">Already have an account? Login here</Link>
       </div>
     </div>
   );

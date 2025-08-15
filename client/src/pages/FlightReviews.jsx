@@ -19,7 +19,7 @@ const FlightReviews = () => {
       .catch(err => console.error('❌ Failed to load reviews:', err));
 
     // Check login status
-    fetch('/users/check-auth', {
+    fetch('/api/users/check-auth', {
       credentials: 'include'
     })
       .then(res => res.json())
@@ -30,7 +30,7 @@ const FlightReviews = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!isLoggedIn) {
-      navigate('/users/login');
+      navigate('/login');
       return;
     }
     try {
@@ -113,7 +113,7 @@ const FlightReviews = () => {
           </>
         ) : (
           <p className="login-warning">
-            🔒 You must <a href="/users/login">log in</a> to leave a review.
+            🔒 You must <a href="/login">log in</a> to leave a review.
           </p>
         )}
       </div>

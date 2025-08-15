@@ -50,7 +50,7 @@ const Home = () => {
   };
 
   useEffect(() => {
-    fetch('/users/check-auth', {
+    fetch('/api/users/check-auth', {
       credentials: 'include'
     })
       .then(res => res.json())
@@ -165,29 +165,35 @@ const Home = () => {
     }
   };
 
-  const handleLogout = async (e) => {
-    e.preventDefault();
+  const handleLogout = async () => {
     try {
-      const res = await fetch('/users/logout', {
-        method: 'GET',
+      const res = await fetch('/api/users/logout', {
+        method: 'POST',
         credentials: 'include',
       });
 
       if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || 'Logout failed.');
+        const err = await res.json().catch(() => ({}));
+        alert(err.error || 'Logout failed.');
         return;
       }
+      
+      const check = await fetch('/api/users/check-auth', { credentials: 'include' });
+      const auth = await check.json().catch(() => ({ authenticated: false }));
 
-      if (res.ok) {
-        alert('Logout successful.');
-        navigate('/'); 
+      // Clear client-side auth hints
+      localStorage.removeItem('userId');
+
+      if (auth.authenticated) {
+        alert('Logout may not have completed. Please try again.');
       } else {
-        const data = await res.json();
-        alert(data.error || 'Logout failed.');
+        alert('Logout successful.');
+        // redirect
+        window.location.href = '/';
       }
-    } catch (err) {
-      console.error('❌ Logout error:', err);
+    } catch (e) {
+      console.error('❌ Logout error:', e);
+      alert('Logout failed. Please try again.');
     }
   };
 
@@ -200,13 +206,13 @@ const Home = () => {
             <Link to="/heatmap" className="dropdown-item">Popular Flights Map</Link>
             {!userId && (
               <>
-                <Link to="/users/login" className="dropdown-item">Log In</Link>
+                <Link to="/login" className="dropdown-item">Log In</Link>
               </>
             )}
 
             {userId && (
               <>
-                <Link to="/users/dashboard" className="dropdown-item">Dashboard</Link>
+                <Link to="/dashboard" className="dropdown-item">Dashboard</Link>
                 <button type="button" className="dropdown-item" onClick={handleLogout}>
                   Log Out
                 </button>
@@ -227,7 +233,7 @@ const Home = () => {
               name="dep"
               value={filters.dep}
               onChange={handleInputChange}
-              fetchUrl="/users/autocomplete"
+              fetchUrl="/api/users/autocomplete"
             />
           </div>
           <div className="home-form-group">
@@ -236,7 +242,7 @@ const Home = () => {
               name="arr"
               value={filters.arr}
               onChange={handleInputChange}
-              fetchUrl="/users/autocomplete"
+              fetchUrl="/api/users/autocomplete"
             />
           </div>
           <div className="home-form-group">
