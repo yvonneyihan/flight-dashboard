@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const connection = require('../../db');
 
-router.get('/popular_airports', async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const [airports] = await connection.query(`
       SELECT AirportID, Latitude, Longitude FROM Airport

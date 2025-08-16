@@ -37,14 +37,22 @@ router.get('/', async (req, res) => {
     sql += ' AND (LOWER(rf.AirlineName) LIKE ?)';
     values.push(`%${airline.toLowerCase()}%`);
   }
-  if (from) {
-    sql += ' AND DATE(rf.ScheduledDeparture) >= ?';
-    values.push(from);
+
+  const norm = s => s?.trim().replace('T', ' ') + (s ? (s.includes(':') ? ':00' : ' 00:00') : '');
+  const fromDt = from ? norm(from) : null;
+  const toDt   = to   ? norm(to)   : null;
+
+  if (fromDt && toDt) {
+    sql += ' AND rf.ScheduledDeparture < ? AND rf.ScheduledArrival > ?';
+    values.push(toDt, fromDt);
+  } else if (fromDt) {
+    sql += ' AND rf.ScheduledArrival > ?';
+    values.push(fromDt);
+  } else if (toDt) {
+    sql += ' AND rf.ScheduledDeparture < ?';
+    values.push(toDt);
   }
-  if (to) {
-    sql += ' AND DATE(rf.ScheduledDeparture) <= ?';
-    values.push(to);
-  }
+
   sql += ` GROUP BY rf.FlightID, rf.AirlineName, rf.Status, rf.ScheduledDeparture, rf.DepartureAirportName, 
   rf.ScheduledArrival, rf.ArrivalAirportName`;
   sql += ' ORDER BY rf.ScheduledDeparture DESC LIMIT 30';

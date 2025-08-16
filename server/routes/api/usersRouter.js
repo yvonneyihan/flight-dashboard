@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const router = express.Router();
-const connection = require('../db');
+const connection = require('../../db');
 
 // Register
 router.post('/register', async (req, res) => {
@@ -195,6 +195,23 @@ router.get('/logout', (req, res) => {
     }
     res.clearCookie('connect.sid', { path: '/' }); 
     res.json({ success: true });
+  });
+});
+
+router.post('/logout', (req, res) => {
+  if (!req.session) {
+    return res.json({ success: true });
+  }
+  req.session.destroy(err => {
+    if (err) return res.status(500).json({ error: 'Logout failed' });
+
+    res.clearCookie('connect.sid', {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: false,
+      path: '/',
+    });
+    return res.json({ success: true });
   });
 });
 
