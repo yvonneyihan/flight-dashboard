@@ -1,16 +1,18 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
 const path = require('path');
+require('./cache'); // Initialize Redis cache connection and wrapper
 
 // Routers
 const usersRouter = require('./routes/api/usersRouter');
 const flightsRouter = require('./routes/api/flights');
 const popularMapRoute = require('./routes/api/popularMap');
+const healthRouter = require('./routes/health');
 
+const timingMiddleware = require('./middleware/timing');
 const app = express();
 
 // CORS
@@ -47,6 +49,11 @@ app.use(session({
     maxAge: 1000 * 60 * 60 * 24, 
   },
 }));
+
+// Add timing middleware
+app.use(timingMiddleware);
+// Health check routes
+app.use('/health', healthRouter);
 
 // API routes
 app.use('/api/users', usersRouter);

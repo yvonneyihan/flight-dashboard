@@ -1,0 +1,36 @@
+services:
+  redis:
+    image: redis:alpine
+    container_name: flight-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  mysql:
+    image: mysql:8.0
+    container_name: flight-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./server/database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./server/database/sample_data.sql:/docker-entrypoint-initdb.d/2-data.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  redis-data:
+  mysql-data:
