@@ -259,7 +259,7 @@ def ai_status():
     })
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5001))
+    port = int(os.getenv('PORT', 5002))
     print(f"\n{'='*50}")
     print(f"🚀 Flight Price Prediction Service")
     print(f"{'='*50}")
