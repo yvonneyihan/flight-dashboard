@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import EditFlight from './pages/EditFlight';
 import HeatAirportMap from './pages/HeatAirportMap';
 import FlightReviews from './pages/FlightReviews';
+import PredictionDemo from './pages/PredictionDemo';
 
 
 const App = () => {
@@ -24,6 +25,7 @@ const App = () => {
         <Route path="/manual-flights/edit/:id" element={<EditFlight />} />
         <Route path="/heatmap" element={<HeatAirportMap />} />
         <Route path="/flights/:flightID/reviews" element={<FlightReviews />} />
+        <Route path="/predictions" element={<PredictionDemo />} />
       </Routes>
     </>
   );

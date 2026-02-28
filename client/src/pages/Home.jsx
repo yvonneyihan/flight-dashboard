@@ -204,6 +204,7 @@ const Home = () => {
           <button className="dropdown-toggle">☰ Menu</button>
           <div className={`dropdown-menu ${menuOpen ? 'show' : ''}`}>
             <Link to="/heatmap" className="dropdown-item">Popular Flights Map</Link>
+            <Link to="/predictions" className="dropdown-item">Price Prediction</Link>
             {!userId && (
               <>
                 <Link to="/login" className="dropdown-item">Log In</Link>
