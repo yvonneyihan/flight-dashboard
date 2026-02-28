@@ -11,6 +11,7 @@ const usersRouter = require('./routes/api/usersRouter');
 const flightsRouter = require('./routes/api/flights');
 const popularMapRoute = require('./routes/api/popularMap');
 const healthRouter = require('./routes/health');
+const predictionsRouter = require('./routes/api/predictions');
 
 const timingMiddleware = require('./middleware/timing');
 const app = express();
@@ -59,6 +60,7 @@ app.use('/health', healthRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/flights', flightsRouter);
 app.use('/api/popular-map', popularMapRoute);
+app.use('/api/predictions', predictionsRouter);
 
 // 404 handler
 app.use('/api', (req, res) => {
