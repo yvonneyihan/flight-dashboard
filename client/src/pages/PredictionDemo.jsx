@@ -1,18 +1,49 @@
 import { useState } from 'react';
 import PricePredictions from '../components/PricePredictions';
+import AutocompleteInput from '../components/Autocomplete';
+import MenuDropdown from '../components/MenuDropdown';
+
 
 function PredictionDemo () {
   const [departure, setDeparture] = useState('JFK');
   const [arrival, setArrival] = useState('LAX');
   const [departureDate, setDepartureDate] = useState('2026-03-15');
+  const handleDepartureChange = (e) => {
+    setDeparture((e.target.value || '').toUpperCase());
+  };
+
+  const handleArrivalChange = (e) => {
+    setArrival((e.target.value || '').toUpperCase());
+  };
 
   return (
-    <div style={{ padding: '40px 20px', backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+    <div className='prediction-container'>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-        <h1 style={{ textAlign: 'center', color: '#1f2937', marginBottom: '40px' }}>
-          ✈️ Flight Price Prediction
+        <header
+        style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            position: "relative",
+            marginBottom: "40px"
+        }}
+        >
+        <div style={{ width: "120px" }} />
+        <h1
+            style={{
+            position: "absolute",
+            left: "50%",
+            transform: "translateX(-50%)",
+            color: "white",
+            margin: 0
+            }}
+        >
+            ✈️ Flight Price Prediction
         </h1>
-
+        <div>
+            <MenuDropdown />
+        </div>
+        </header>
         {/* Input Form */}
         <div style={{ 
           background: 'white', 
@@ -30,38 +61,32 @@ function PredictionDemo () {
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>
                 Departure Airport
               </label>
-              <input
-                type="text"
-                value={departure}
-                onChange={(e) => setDeparture(e.target.value.toUpperCase())}
-                placeholder="Departure Airport"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '16px'
-                }}
-              />
+              <div className="form-group">
+                <AutocompleteInput
+                  label="Departure Airport"
+                  name="DepartureAirport"
+                  value={departure}                 
+                  onChange={handleDepartureChange}  
+                  fetchUrl="/api/users/autocomplete"
+                  required
+                />
+              </div>
             </div>
 
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontWeight: '600', color: '#374151' }}>
                 Arrival Airport
               </label>
-              <input
-                type="text"
-                value={arrival}
-                onChange={(e) => setArrival(e.target.value.toUpperCase())}
-                placeholder="Arrival Airport"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '2px solid #e5e7eb',
-                  borderRadius: '8px',
-                  fontSize: '16px'
-                }}
-              />
+              <div className="form-group">
+                <AutocompleteInput
+                  label="Arrival Airport"
+                  name="ArrivalAirport"
+                  value={arrival}                
+                  onChange={handleArrivalChange}  
+                  fetchUrl="/api/users/autocomplete"
+                  required
+                />
+              </div>
             </div>
 
             <div>
@@ -72,8 +97,8 @@ function PredictionDemo () {
                 type="date"
                 value={departureDate}
                 onChange={(e) => setDepartureDate(e.target.value)}
+                className="form-control"
                 style={{
-                  width: '100%',
                   padding: '12px',
                   border: '2px solid #e5e7eb',
                   borderRadius: '8px',

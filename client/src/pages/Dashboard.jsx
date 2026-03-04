@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import '../styles/Dashboard.css';
 import { Link, useNavigate } from 'react-router-dom';
 import AutocompleteInput from '../components/Autocomplete';
+import MenuDropdown from '../components/MenuDropdown';
 
 const Dashboard = () => {
   const [searches, setSearches] = useState([]);
@@ -15,7 +16,7 @@ const Dashboard = () => {
     ArrivalAirport: '',
     Note: ''
   });
-  const navigate = useNavigate();
+  const [userId, setUserId] = useState(null);
 
   // Fetch manual flights only
   const fetchFlights = async () => {
@@ -35,6 +36,7 @@ const Dashboard = () => {
         // Check session
         const res = await fetch('/api/users/check-auth', { credentials: 'include' });
         const data = await res.json();
+        setUserId(data.userId);
         if (!data.authenticated) {
           window.location.href = '/api/users/login'; 
           return;
@@ -121,38 +123,14 @@ const Dashboard = () => {
       console.error('❌ Delete error:', err);
     }
   };
-
-  const handleLogout = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await fetch('/api/users/logout', {
-        method: 'GET',
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        alert(data.error || 'Logout failed.');
-        return;
-      }
-
-      if (res.ok) {
-        alert('Logout successful.');
-        navigate('/'); 
-      } else {
-        const data = await res.json();
-        alert(data.error || 'Logout failed.');
-      }
-    } catch (err) {
-      console.error('❌ Logout error:', err);
-    }
-  };
-
-
   return (
     <div className="dashboard-container">
-      <h2>Welcome to Your Dashboard</h2>
-
+      <header className="header">
+        <div style={{ width: '80px' }} />
+        <h1 className="dashboard-header">Welcome to Your Dashboard</h1>
+        <MenuDropdown />
+      </header>
+      {userId && <p className="user-status" style={{ color: 'white' }}>🔐 Logged in as user ID {userId}</p>}
       <section>
         <h3>Recent Searches</h3>
         <table className="table">
@@ -282,16 +260,6 @@ const Dashboard = () => {
               required
             />
           </div>
-          <div className="form-group">
-            <input
-              type="text"
-              name="Note"
-              value={form.Note}
-              onChange={handleChange}
-              placeholder="Note"
-              className="form-control"
-            />
-          </div>
 
           <div className="form-group">
             <AutocompleteInput
@@ -315,16 +283,19 @@ const Dashboard = () => {
             />
           </div>
 
+          <div className="form-group">
+            <input
+              type="text"
+              name="Note"
+              value={form.Note}
+              onChange={handleChange}
+              placeholder="Note"
+              className="form-control"
+            />
+          </div>
           <button type="submit">Save Flight</button>
         </form>
       </section>
-
-      <footer style={{ marginTop: '40px' }}>
-        <a href="/" className="nav-link">Back to Home</a> |{' '}
-        <button type="button" className="dropdown-item" onClick={handleLogout}>
-          Log Out
-        </button>
-      </footer>
     </div>
   );
 };

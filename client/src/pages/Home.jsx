@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import '../styles/Home.css';
 import { FaSearch, FaUndo } from 'react-icons/fa';
 import AutocompleteInput from '../components/Autocomplete';
+import MenuDropdown from '../components/MenuDropdown';
 
 
 const Home = () => {
@@ -20,12 +21,7 @@ const Home = () => {
     to: searchParams.get('to') || ''
   });
 
-  const [menuOpen, setMenuOpen] = useState(false);
   const [userId, setUserId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-  const handleMouseEnter = () => setMenuOpen(true);
-  const handleMouseLeave = () => setMenuOpen(false);
   const fetchFlights = async (overrideFilters) => {
     const params = new URLSearchParams(overrideFilters || filters);
     try {
@@ -200,32 +196,14 @@ const Home = () => {
   return (
     <div className="home-container">
       <header className="header">
-        <div className="dropdown-container" onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
-          <button className="dropdown-toggle">☰ Menu</button>
-          <div className={`dropdown-menu ${menuOpen ? 'show' : ''}`}>
-            <Link to="/heatmap" className="dropdown-item">Popular Flights Map</Link>
-            <Link to="/predictions" className="dropdown-item">Price Prediction</Link>
-            {!userId && (
-              <>
-                <Link to="/login" className="dropdown-item">Log In</Link>
-              </>
-            )}
-
-            {userId && (
-              <>
-                <Link to="/dashboard" className="dropdown-item">Dashboard</Link>
-                <button type="button" className="dropdown-item" onClick={handleLogout}>
-                  Log Out
-                </button>
-              </>
-            )}
-          </div>
-        </div>
+        <div style={{ width: '80px' }} />
+        <h1 className="page-title">Skylink Flight Schedule</h1>
+        <MenuDropdown />
       </header>
 
-      <h1 className="page-title">📋 Flight Schedule</h1>
+      
       {userId && <p className="user-status">🔐 Logged in as user ID {userId}</p>}
-
+    
       <form onSubmit={handleSubmit} className="search-form">
         <div className="form-row">
           <div className="home-form-group">
@@ -255,8 +233,8 @@ const Home = () => {
           <div className="home-form-group">
           <input type="datetime-local" name="to" value={filters.to} onChange={handleInputChange} className="form-control" />
           </div>
-          <div className="home-form-group">
-            <div className="button-group">
+          <div className="home-form-group" style={{ gridColumn: '1 / -1' }}>
+            <div className="button-group" style={{ justifyContent: 'center' }}>
               <button type="submit" className="primary-btn"><FaSearch /> Search</button>
               <button type="button" 
               onClick={() => { 
@@ -275,90 +253,94 @@ const Home = () => {
       </form>
 
       <p className="results-message">
-        {flights.length > 0 ? `${flights.length} flight${flights.length === 1 ? '' : 's'} found.` : 'No matching flights found.'}
+        {flights.length > 0 ? `${flights.length} flight${flights.length === 1 ? '' : 's'} found` : 'No matching flights found.'}
       </p>
-
-      <table className="flight-table">
-        <thead>
-          <tr>
-            <th>Flight ID</th>
-            <th>Airline</th>
-            <th>Status</th>
-            <th>Departure Time</th>
-            <th>Departure Airport</th>
-            <th>Arrival Time</th>
-            <th>Arrival Airport</th>
-            <th>Likes</th>
-            <th>Dislikes</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {flights.map((flight, i) => (
-            <tr key={i}>
-              <td>{flight.FlightID}</td>
-              <td>{flight.Airline}</td>
-              <td>{flight.Status}</td>
-              <td>{new Date(flight.ScheduledDeparture).toLocaleString('en-CA', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit' 
-              })}</td>
-              <td>{flight.DepartureAirport}</td>
-              <td>{new Date(flight.ScheduledArrival).toLocaleString('en-CA', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit' 
-              })}</td>
-              <td>{flight.ArrivalAirport}</td>
-              <td>{Number(flight.Likes) || 0}</td>
-              <td>{Number(flight.Dislikes) || 0}</td>
-              <td>
-                <Link to={`/flights/${flight.FlightID}/reviews`} className="button-link green">
-                  View Reviews
-                </Link>
-                <div className="button-group">
-                  <button
-                    onClick={() => handleLike(flight.FlightID)}
-                    aria-pressed={myVotes[flight.FlightID] === 'like'}
-                  >
-                    👍 
-                  </button>
-                  <button
-                    onClick={() => handleDislike(flight.FlightID)}
-                    aria-pressed={myVotes[flight.FlightID] === 'dislike'}
-                  >
-                    👎 
-                  </button>
-                </div>
-              </td>
+      <div style={{ overflowX: 'auto', width: '100%' }}>
+        <table className="flight-table">
+          <thead>
+            <tr>
+              <th>Flight ID</th>
+              <th>Airline</th>
+              <th>Status</th>
+              <th>Departure Time</th>
+              <th>Departure Airport</th>
+              <th>Arrival Time</th>
+              <th>Arrival Airport</th>
+              <th>Likes</th>
+              <th>Dislikes</th>
+              <th>Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {flights.map((flight, i) => (
+              <tr key={i}>
+                <td>{flight.FlightID}</td>
+                <td>{flight.Airline}</td>
+                <td>{flight.Status}</td>
+                <td>{new Date(flight.ScheduledDeparture).toLocaleString('en-CA', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit' 
+                })}</td>
+                <td>{flight.DepartureAirport}</td>
+                <td>{new Date(flight.ScheduledArrival).toLocaleString('en-CA', {
+                  year: 'numeric',
+                  month: '2-digit',
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit' 
+                })}</td>
+                <td>{flight.ArrivalAirport}</td>
+                <td>{Number(flight.Likes) || 0}</td>
+                <td>{Number(flight.Dislikes) || 0}</td>
+                <td>
+                  <Link to={`/flights/${flight.FlightID}/reviews`} className="button-link green">
+                    View Reviews
+                  </Link>
+                  <div className="button-group">
+                    <button
+                      onClick={() => handleLike(flight.FlightID)}
+                      aria-pressed={myVotes[flight.FlightID] === 'like'}
+                    >
+                      👍 
+                    </button>
+                    <button
+                      onClick={() => handleDislike(flight.FlightID)}
+                      aria-pressed={myVotes[flight.FlightID] === 'dislike'}
+                    >
+                      👎 
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      
       <h2 className="section-heading">✈️ Most Searched Routes</h2>
-      <table className="popular-routes-table">
-        <thead>
-          <tr>
-            <th>Departure Airport</th>
-            <th>Arrival Airport</th>
-            <th>Search Count</th>
-          </tr>
-        </thead>
-        <tbody>
-          {popularRoutes.map((route, i) => (
-            <tr key={i}>
-              <td>{route.depAirport}</td>
-              <td>{route.arrAirport}</td>
-              <td>{route.searchCount}</td>
+      <div style={{ overflowX: 'auto', width: '100%' }}>
+        <table className="popular-routes-table">
+          <thead>
+            <tr>
+              <th>Departure Airport</th>
+              <th>Arrival Airport</th>
+              <th>Search Count</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {popularRoutes.map((route, i) => (
+              <tr key={i}>
+                <td>{route.depAirport}</td>
+                <td>{route.arrAirport}</td>
+                <td>{route.searchCount}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };

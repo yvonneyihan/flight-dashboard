@@ -1,3 +1,10 @@
+.prediction-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 24px;
+    max-width: 700px;
+    margin: 40px auto;
+}
 .price-prediction {
   max-width: 600px;
   margin: 20px auto;
@@ -9,7 +16,7 @@
   padding: 16px;
   font-size: 18px;
   font-weight: 600;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #8b9cff 0%, #9d7bc4 100%);
   color: white;
   border: none;
   border-radius: 12px;

@@ -15,7 +15,6 @@ const EditFlight = () => {
     ArrivalAirport: '',
     Note: ''
   });
-  const [suggestions, setSuggestions] = useState({ DepartureAirport: [], ArrivalAirport: [] });
 
   useEffect(() => {
     fetch(`/api/users/manual-flights/${id}`) 
@@ -59,7 +58,7 @@ const EditFlight = () => {
 
   return (
     <div className="edit-flight-container">
-      <h1 className="page-title">✈️ Edit Manual Flight</h1>
+      <h1 className="editFlight-page-title">✈️ Edit Manual Flight</h1>
       <form className="edit-form" onSubmit={handleSubmit}>
         <input type="text" name="FlightID" value={flight.FlightID} onChange={handleChange} required placeholder="Flight ID" />
         <input type="text" name="Airline" value={flight.Airline} onChange={handleChange} required placeholder="Airline" />

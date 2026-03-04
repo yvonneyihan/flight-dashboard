@@ -3,6 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.heat'; 
 import '../styles/HeatAirportMap.css';
+import MenuDropdown from '../components/MenuDropdown';
 
 const airportIcon = L.icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
@@ -95,9 +96,36 @@ const HeatAirportMap = () => {
   }, []);
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h1 style={{ textAlign: 'center' }}>🌍 Most Searched Airports and Routes</h1>
-      <a href="/" style={{ margin: '10px 0', display: 'inline-block' }}>Back to Home</a>
+    <div style={{ padding: '20px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+      <header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        padding: '0 20px 20px',
+        gap: '20px'
+      }}>
+        <div style={{ flex: 1 }} />
+        <h1 style={{ 
+          textAlign: 'center', 
+          color: 'white',
+          flex: 2,
+          margin: 0
+        }}>
+          🌍 Most Searched Airports and Routes
+        </h1>
+        <div 
+          style={{ 
+            flex: 1, 
+            display: 'flex', 
+            justifyContent: 'flex-end',
+            position: 'relative',
+            zIndex: 1000
+          }}
+        >
+          <MenuDropdown />
+        </div>
+      </header>
+      
       <div
         id="map"
         style={{
