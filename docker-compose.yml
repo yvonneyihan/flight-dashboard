@@ -1,0 +1,119 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: flight-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./server/database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql
+      - ./server/database/sample_data.sql:/docker-entrypoint-initdb.d/2-data.sql
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - flight-network
+
+  # Redis Cache
+  redis:
+    image: redis:alpine
+    container_name: flight-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - flight-network
+
+  # ML Service (Python Flask)
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    image: flight-ml-service:latest
+    container_name: flight-ml-service
+    environment:
+      PORT: 5002
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+    ports:
+      - "5002:5002"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5002/health"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+    networks:
+      - flight-network
+    restart: unless-stopped
+
+  # Backend (Node.js)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flight-backend
+    environment:
+      PORT: 5001
+      NODE_ENV: production
+      LOG_LEVEL: warn
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      ML_SERVICE_URL: http://ml-service:5002
+    ports:
+      - "5001:5001"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ml-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - flight-network
+    restart: unless-stopped
+
+  # Frontend (React + Nginx)
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: flight-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - flight-network
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+  redis-data:
+
+networks:
+  flight-network:
+    driver: bridge
