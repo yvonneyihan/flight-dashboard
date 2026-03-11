@@ -83,7 +83,7 @@ const FlightReviews = () => {
       <div className="review-form-section">
         {isLoggedIn ? (
           <>
-            <h2>🖊️ Leave a Review</h2>
+            <h2>Leave a Review</h2>
             <form onSubmit={handleSubmit} className="review-form">
               <textarea
                 value={commentText}

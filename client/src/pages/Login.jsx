@@ -20,7 +20,7 @@ const Login = () => {
         credentials: 'include',
         body: JSON.stringify({ email, password })
       });
-
+      console.log("Login response status:", res.status);
       // Handle incorrect credentials
       if (res.status === 401) {
         const data = await res.json();
@@ -30,6 +30,7 @@ const Login = () => {
 
       // Handle other non-success statuses
       if (!res.ok) {
+        console.log("Login failed:", res.status);
         const data = await res.json().catch(() => ({}));
         setError(data.error || `Login failed. Server returned ${res.status}.`);
         return;
@@ -37,7 +38,9 @@ const Login = () => {
 
       // Success
       const data = await res.json();
+      console.log("Login success data:", data); 
       localStorage.setItem('userId', data.userId || '1');
+      console.log("Navigating to dashboard...");
       navigate('/dashboard');
 
     } catch (err) {
