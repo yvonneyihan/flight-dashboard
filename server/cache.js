@@ -1,10 +1,11 @@
+require('dotenv').config();
 const redis = require('redis');
 
 // Connection config
 const client = redis.createClient({
-  host: process.env.REDIS_HOST || 'localhost',
-  port: process.env.REDIS_PORT || 6379,
   socket: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379,
     reconnectStrategy: (retries) => {
       if (retries > 10) {
         console.error('Redis reconnection failed after 10 attempts');
