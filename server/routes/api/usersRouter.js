@@ -71,6 +71,8 @@ router.get('/searches', async (req, res) => {
 
 // Dashboard - manual flight
 router.get('/manual-flights', async (req, res) => {
+  console.log('Session:', req.session);
+  console.log('User ID:', req.session.userId);
   if (!req.session.userId) return res.status(403).json({ error: 'Unauthorized' });
   const userId = req.session.userId;
   const [manuals] = await connection.query(
