@@ -8,7 +8,9 @@ Full-stack microservices application for flight search and AI-powered price pred
 |---|---|
 | ![Flight Search](docs/screenshots/flight-search.gif) | ![AI Price Prediction](docs/screenshots/price-prediction.gif) |
 
-![Popular Routes](docs/screenshots/PopularRoutes.png)
+| Popular Routes | Flight Reviews |
+|---|---|
+| ![Popular Routes](docs/screenshots/PopularRoutes.png) | ![Flight Reviews](docs/screenshots/Review.png) |
 
 ## Features
 
