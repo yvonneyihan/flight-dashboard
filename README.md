@@ -15,7 +15,7 @@ Full-stack microservices application for flight search and AI-powered price pred
 ## Features
 
 - **Flight Search** – Search flights by departure, arrival, airline, and date range.
-- **AI Price Prediction** – Hybrid model with 85-98% confidence (rule-based + GPT-3.5)
+- **AI Price Prediction** – Rule-based price estimate adjusted by a GPT-3.5 market multiplier, 65-98% confidence based on booking lead time
 - **Popular Routes Tracking** – Records and ranks frequently searched routes.
 - **User Accounts** – Secure login with Redis sessions.
 - **Flight Reviews** – Users can leave comments and ratings for flights.
