@@ -22,6 +22,7 @@ const Home = () => {
   });
 
   const [userId, setUserId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const fetchFlights = async (overrideFilters) => {
     const params = new URLSearchParams(overrideFilters || filters);
     try {
@@ -56,7 +57,7 @@ const Home = () => {
         } else {
           setUserId(null);
         }
-        setIsLoading(false);
+        // setIsLoading(false);
       });
   }, []);
 

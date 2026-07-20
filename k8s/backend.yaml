@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: flight-dashboard
+spec:
+  replicas: 3  # Scale backend horizontally
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers: 
+      - name: wait-for-mysql
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nslookup mysql.flight-dashboard.svc.cluster.local; do echo waiting for mysql; sleep 2; done']
+      - name: wait-for-redis
+        image: busybox:1.28
+        command: ['sh', '-c', 'until nslookup redis.flight-dashboard.svc.cluster.local; do echo waiting for redis; sleep 2; done']
+      containers:
+      - name: backend
+        image: flight-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 5001
+        env:
+        - name: PORT
+          value: "5001"
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: flight-config
+              key: NODE_ENV
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: flight-config
+              key: DB_HOST
+        - name: DB_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: flight-config
+              key: DB_PORT
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: flight-config
+              key: DB_USER
+        - name: DB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: flight-config
+              key: DB_NAME
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: flight-secrets
+              key: DB_PASSWORD
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: flight-config
+              key: REDIS_HOST
+        - name: REDIS_PORT
+          valueFrom:
+            configMapKeyRef:
+              name: flight-config
+              key: REDIS_PORT
+        - name: ML_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: flight-config
+              key: ML_SERVICE_URL
+        livenessProbe:
+          httpGet:
+            path: /api/predictions/health
+            port: 5001
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/predictions/health
+            port: 5001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: flight-dashboard
+spec:
+  selector:
+    app: backend
+  ports:
+  - port: 5001
+    targetPort: 5001

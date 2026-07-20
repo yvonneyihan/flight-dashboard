@@ -56,3 +56,5 @@ uploads/
 
 # Docker
 *.env.docker
+
+k8s/secret.local.yaml

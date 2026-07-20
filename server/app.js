@@ -3,6 +3,8 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const { createClient } = require('redis');
 const path = require('path');
 require('./cache'); // Initialize Redis cache connection and wrapper
 
@@ -16,6 +18,16 @@ const predictionsRouter = require('./routes/api/predictions');
 const timingMiddleware = require('./middleware/timing');
 const app = express();
 
+// Create Redis client
+const redisClient = createClient({
+  socket: {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379
+  },
+  legacyMode: true
+});
+
+redisClient.connect().catch(console.error);
 // CORS
 const allowedOrigins = process.env.CORS_ORIGINS
   ? process.env.CORS_ORIGINS.split(',')
@@ -32,24 +44,41 @@ const corsOptions = {
   credentials: true,
 };
 
-app.use(cors(corsOptions));
+app.use(cors({
+  origin: true,
+  credentials: true
+}));
 app.options('*', cors(corsOptions));
-
 // Middleware
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+// app.use(session({
+//   secret: process.env.SESSION_SECRET || 'default-secret',
+//   resave: false,
+//   saveUninitialized: false,
+//   cookie: {
+//     secure: false,
+//     httpOnly: true,
+//     maxAge: 1000 * 60 * 60 * 24, 
+//     sameSite: 'lax',
+//   },
+// }));
+// Use Redis for session storage
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'default-secret',
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
   resave: false,
   saveUninitialized: false,
   cookie: {
+    secure: false,
     httpOnly: true,
-    secure: false, 
-    maxAge: 1000 * 60 * 60 * 24, 
-  },
+    maxAge: 24 * 60 * 60 * 1000,
+    sameSite: 'lax'
+  }
 }));
+
 
 // Add timing middleware
 app.use(timingMiddleware);
@@ -85,6 +114,13 @@ app.use((err, req, res, next) => {
     error: err.message,
     ...(req.app.get('env') === 'development' && { stack: err.stack }),
   });
+});
+
+//Debug logging for sessions
+app.use((req, res, next) => {
+  console.log('📋 Session ID:', req.sessionID);
+  console.log('👤 User ID:', req.session?.userId);
+  next();
 });
 
 module.exports = app;

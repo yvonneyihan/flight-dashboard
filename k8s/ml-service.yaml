@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ml-service
+  namespace: flight-dashboard
+spec:
+  replicas: 2  # Can scale ML service
+  selector:
+    matchLabels:
+      app: ml-service
+  template:
+    metadata:
+      labels:
+        app: ml-service
+    spec:
+      containers:
+      - name: ml-service
+        image: flight-ml-service:latest
+        imagePullPolicy: Never  # For local development
+        ports:
+        - containerPort: 5002
+        env:
+        - name: PORT
+          value: "5002"
+        - name: OPENAI_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: flight-secrets
+              key: OPENAI_API_KEY
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5002
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5002
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ml-service
+  namespace: flight-dashboard
+spec:
+  selector:
+    app: ml-service
+  ports:
+  - port: 5002
+    targetPort: 5002
