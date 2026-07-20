@@ -2,6 +2,14 @@
 
 Full-stack microservices application for flight search and AI-powered price prediction. Built with React, Node.js, Python Flask, deployed on Kubernetes.
 
+## Demo
+
+| Flight Search | AI Price Prediction |
+|---|---|
+| ![Flight Search](docs/screenshots/flight-search.gif) | ![AI Price Prediction](docs/screenshots/price-prediction.gif) |
+
+![Popular Routes](docs/screenshots/PopularRoutes.png)
+
 ## Features
 
 - **Flight Search** – Search flights by departure, arrival, airline, and date range.
