@@ -85,6 +85,48 @@ flight-dashboard/
 
 7. **Open the app at http://localhost:5173**
 
+## Testing
+
+| Service | Framework | Status |
+|---|---|---|
+| Backend (`server/`) | Jest + Supertest | ✅ Done |
+| Frontend (`client/`) | Vitest + React Testing Library | ✅ Done |
+| ML Service (`ml-service/`) | pytest | ✅ Done |
+| CI (GitHub Actions) | — | 🔜 Planned |
+
+**Backend** — MySQL and Redis are mocked (`__mocks__/`), so no real database is needed to run these:
+
+```bash
+npm test
+```
+
+Covers:
+- `GET /health` and `/health/detailed` (including database/Redis failure branches)
+- `POST /api/predictions/price` (validation, successful prediction, ML-service outage handling)
+- `GET /api/users/autocomplete` (blank query, matching results, database error handling)
+
+**Frontend** — from `client/`:
+
+```bash
+npm test
+```
+
+Covers:
+- `AutocompleteInput` (fetch threshold, rendering suggestions, selection, failed-fetch handling)
+- `Home` page (renders without crashing, flight data loads and displays correctly)
+
+**ML Service** — from `ml-service/` (with the venv activated), OpenAI calls are mocked so no real API calls or costs are incurred:
+
+```bash
+pytest
+```
+
+Covers:
+- `/health` endpoint
+- `/predict` validation (missing fields, invalid date, past date)
+- Rule-based vs. hybrid-AI prediction paths, including confidence scoring
+- `calculate_rule_based_price` and `get_ai_market_insights` as isolated unit tests (including the multiplier safety clamp and API-failure fallback)
+
 ## Deploy to Kubernetes
 
 1. **Clone the repository**
