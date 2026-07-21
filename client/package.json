@@ -22,7 +22,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "start": "vite"
+    "start": "vite",
+    "test": "vitest run"
   },
   "eslintConfig": {
     "extends": []
@@ -42,6 +43,8 @@
   "proxy": "http://localhost:5000",
   "devDependencies": {
     "@vitejs/plugin-react": "^5.1.4",
-    "vite": "^7.3.1"
+    "jsdom": "^29.1.1",
+    "vite": "^7.3.1",
+    "vitest": "^4.1.10"
   }
 }
