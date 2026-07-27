@@ -120,7 +120,7 @@ Prefer running services directly on your machine (e.g. for active development wi
 | Backend (`server/`) | Jest + Supertest | ✅ Done |
 | Frontend (`client/`) | Vitest + React Testing Library | ✅ Done |
 | ML Service (`ml-service/`) | pytest | ✅ Done |
-| CI (GitHub Actions) | — | 🔜 Planned |
+| CI (GitHub Actions) | — | ✅ Done |
 
 **Backend** — MySQL and Redis are mocked (`__mocks__/`), so no real database is needed to run these:
 
