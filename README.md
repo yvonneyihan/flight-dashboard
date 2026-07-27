@@ -51,7 +51,35 @@ flight-dashboard/
 └── README.md
 ```
 
+## Quick Start (Docker)
+
+The fastest way to run the whole stack — MySQL, Redis, ML service, backend, and frontend — with a single command.
+
+1. **Clone the repository and set up environment variables**
+   ```bash
+   git clone https://github.com/yvonneyihan/flight-dashboard.git
+   cd flight-dashboard
+   cp .env.example .env
+   ```
+   Fill in `DB_PASSWORD`, `DB_NAME`, and (optionally) `OPENAI_API_KEY` in `.env`.
+
+2. **Start everything**
+   ```bash
+   docker compose up --build -d
+   ```
+
+3. **Open the app at http://localhost**
+
+Useful follow-ups:
+```bash
+docker compose ps            # check that all 5 services are healthy
+docker compose logs -f backend   # tail logs for one service
+docker compose down          # stop and remove containers (keeps data volumes)
+```
+
 ## Local Development
+
+Prefer running services directly on your machine (e.g. for active development without rebuilding containers)? Follow these steps instead:
 
 1. **Clone the repository**
    ```bash
