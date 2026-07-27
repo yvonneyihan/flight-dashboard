@@ -5,7 +5,7 @@
   "description": "Full-stack flight search dashboard with AI-powered price prediction, built with React, Express, and Flask.",
   "keywords": ["flight-search", "react", "express", "flask", "docker", "kubernetes"],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server/server.js",
