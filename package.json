@@ -1,11 +1,14 @@
 {
-  "name": "myproj",
-  "version": "0.0.0",
+  "name": "flight-dashboard",
+  "version": "1.0.0",
   "private": true,
+  "description": "Full-stack flight search dashboard with AI-powered price prediction, built with React, Express, and Flask.",
+  "keywords": ["flight-search", "react", "express", "flask", "docker", "kubernetes"],
+  "author": "",
+  "license": "ISC",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon server/server.js",
-    "server:dev": "nodemon server/server.js",
     "client": "npm run start --prefix client",
     "start": "node server/server.js",
     "test": "jest"
@@ -13,35 +16,20 @@
   "dependencies": {
     "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
-    "bcryptjs": "^3.0.2",
-    "body-parser": "^2.2.0",
     "concurrently": "^9.2.0",
     "connect-redis": "^6.1.3",
     "cookie-parser": "~1.4.4",
     "cors": "^2.8.5",
-    "debug": "~2.6.9",
     "dotenv": "^17.2.1",
-    "ejs": "~2.6.1",
     "express": "~4.16.1",
     "express-session": "^1.18.1",
-    "http-errors": "~1.6.3",
-    "leaflet": "^1.9.4",
-    "leaflet.heat": "^0.2.0",
     "morgan": "~1.9.1",
     "mysql2": "^3.14.2",
-    "path": "^0.12.7",
     "redis": "^4.6.0"
   },
-  "main": "app.js",
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
   "devDependencies": {
-    "@vitejs/plugin-react": "^5.0.0",
     "jest": "^30.4.2",
     "nodemon": "^3.1.10",
-    "supertest": "^7.2.2",
-    "vite": "^7.1.1"
+    "supertest": "^7.2.2"
   }
 }
