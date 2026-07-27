@@ -52,7 +52,7 @@ function PricePredictions({ departure, arrival, departureDate }) {
         disabled={loading}
         className="predict-button"
       >
-        {loading ? 'Analyzing...' : ' Get Price Prediction'}
+        {loading ? 'Analyzing...' : ' Get Price Evaluation'}
       </button>
 
       {error && (
@@ -71,15 +71,19 @@ function PricePredictions({ departure, arrival, departureDate }) {
       {prediction && !loading && (
         <div className="prediction-result">
           <div className="prediction-header">
-            <h3>Price Prediction</h3>
+            <h3>Price Evaluation</h3>
             <div className="prediction-method">
               {prediction.prediction_details.method === 'hybrid_ai' ? '🤖 AI-Enhanced' : '📊 Rule-Based'}
             </div>
           </div>
 
+          <p className="prediction-disclaimer">
+            Heuristic indicator based on booking conditions — a benchmark to inform your search, not a guaranteed fare.
+          </p>
+
           {/* Main Price */}
           <div className="predicted-price">
-            <div className="price-label">Predicted Price</div>
+            <div className="price-label">Estimated Typical Fare</div>
             <div className="price-amount">${prediction.predicted_price}</div>
             <div className="confidence-bar">
               <div 
@@ -129,7 +133,7 @@ function PricePredictions({ departure, arrival, departureDate }) {
           {/* AI Adjustment (if applicable) */}
           {prediction.prediction_details.ai_adjustment.applied && (
             <div className="ai-insight">
-              <h4>🤖 AI Market Analysis</h4>
+              <h4>🤖 AI-Generated Explanation</h4>
               <p className="ai-reasoning">
                 {prediction.prediction_details.ai_adjustment.reasoning}
               </p>
