@@ -61,7 +61,17 @@ const EditFlight = () => {
       <h1 className="editFlight-page-title">✈️ Edit Manual Flight</h1>
       <form className="edit-form" onSubmit={handleSubmit}>
         <input type="text" name="FlightID" value={flight.FlightID} onChange={handleChange} required placeholder="Flight ID" />
-        <input type="text" name="Airline" value={flight.Airline} onChange={handleChange} required placeholder="Airline" />
+        <div className="form-group">
+          <AutocompleteInput
+            label="Airline"
+            name="Airline"
+            value={flight.Airline}
+            onChange={handleChange}
+            fetchUrl="/api/users/autocomplete/airlines"
+            valueField="name"
+            required
+          />
+        </div>
         <input type="datetime-local" name="ScheduledDeparture" value={flight.ScheduledDeparture} onChange={handleChange} required />
         <input type="datetime-local" name="ScheduledArrival" value={flight.ScheduledArrival} onChange={handleChange} />
         <div className="form-group">

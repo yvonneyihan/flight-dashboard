@@ -9,6 +9,43 @@ INSERT INTO Passenger (Name, Email, Password) VALUES
 ('Bob Johnson',  'bob@example.com',  '$2b$10$examplehashhashhashhashhash2'),
 ('Cara Lee',     'cara@example.com', '$2b$10$examplehashhashhashhashhash3');
 
+-- Airlines
+INSERT INTO Airline (Code, Name) VALUES
+('AA', 'American Airlines'),
+('UA', 'United Airlines'),
+('DL', 'Delta Air Lines'),
+('WN', 'Southwest Airlines'),
+('AS', 'Alaska Airlines'),
+('B6', 'JetBlue Airways'),
+('NK', 'Spirit Airlines'),
+('F9', 'Frontier Airlines'),
+('HA', 'Hawaiian Airlines'),
+('AC', 'Air Canada'),
+('BA', 'British Airways'),
+('AF', 'Air France'),
+('LH', 'Lufthansa'),
+('KL', 'KLM Royal Dutch Airlines'),
+('IB', 'Iberia'),
+('LX', 'Swiss International Air Lines'),
+('AZ', 'ITA Airways'),
+('TP', 'TAP Air Portugal'),
+('FI', 'Icelandair'),
+('EI', 'Aer Lingus'),
+('TK', 'Turkish Airlines'),
+('EK', 'Emirates'),
+('QR', 'Qatar Airways'),
+('EY', 'Etihad Airways'),
+('SQ', 'Singapore Airlines'),
+('CX', 'Cathay Pacific'),
+('JL', 'Japan Airlines'),
+('NH', 'All Nippon Airways'),
+('KE', 'Korean Air'),
+('QF', 'Qantas'),
+('AM', 'Aeromexico'),
+('LA', 'LATAM Airlines'),
+('CM', 'Copa Airlines'),
+('AI', 'Air India');
+
 -- Airports
 INSERT INTO Airport (AirportID, Name, City, Country, Latitude, Longitude) VALUES
 ('ORD', 'Chicago O''Hare International Airport', 'Chicago', 'USA', 41.9742000000, -87.9073000000),

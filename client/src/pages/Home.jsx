@@ -226,7 +226,14 @@ const Home = () => {
             />
           </div>
           <div className="home-form-group">
-          <input name="airline" value={filters.airline} onChange={handleInputChange} placeholder="Airline" className="form-control" />
+            <AutocompleteInput
+              label="Airline"
+              name="airline"
+              value={filters.airline}
+              onChange={handleInputChange}
+              fetchUrl="/api/users/autocomplete/airlines"
+              valueField="name"
+            />
           </div>
           <div className="home-form-group">
           <input type="datetime-local" name="from" value={filters.from} onChange={handleInputChange} className="form-control" />

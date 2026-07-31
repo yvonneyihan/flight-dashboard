@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import '../styles/Autocomplete.css'; 
 
-const AutocompleteInput = ({ label, value, onChange, fetchUrl, name, required = false }) => {
+const AutocompleteInput = ({ label, value, onChange, fetchUrl, name, required = false, valueField = 'code' }) => {
   const [suggestions, setSuggestions] = useState([]);
 
   const handleInputChange = (e) => {
@@ -29,8 +29,8 @@ const AutocompleteInput = ({ label, value, onChange, fetchUrl, name, required = 
       });
   };
 
-  const handleSelect = (code) => {
-    onChange({ target: { name, value: code } });
+  const handleSelect = (suggestion) => {
+    onChange({ target: { name, value: suggestion[valueField] } });
     setSuggestions([]);
   };
 
@@ -55,7 +55,7 @@ const AutocompleteInput = ({ label, value, onChange, fetchUrl, name, required = 
             <div
               key={i}
               className="suggestion-item"
-              onMouseDown={() => handleSelect(s.code)}
+              onMouseDown={() => handleSelect(s)}
             >
               {s.name} ({s.code})
             </div>

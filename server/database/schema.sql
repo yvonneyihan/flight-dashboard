@@ -5,6 +5,20 @@
 -- Description: Schema for SkyLink flight search app with simulated data
 -- =============================
 
+SET FOREIGN_KEY_CHECKS=0;
+
+--
+-- Table structure for table `Airline`
+--
+DROP TABLE IF EXISTS `Airline`;
+
+CREATE TABLE `Airline` (
+  `Code` varchar(3) NOT NULL,
+  `Name` varchar(100) NOT NULL,
+  PRIMARY KEY (`Code`),
+  KEY `idx_airline_name` (`Name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
 --
 -- Table structure for table `Airport`
 --
@@ -22,7 +36,7 @@ CREATE TABLE `Airport` (
   KEY `idx_airport_airportid_name` (`AirportID`,`Name`),
   CONSTRAINT `chk_airport_latitude` CHECK ((`Latitude` between -(90) and 90)),
   CONSTRAINT `chk_airport_longitude` CHECK ((`Longitude` between -(180) and 180)),
-  CONSTRAINT `chk_airportid_length` CHECK ((char_length(`AirportID`) <= 10)),
+  CONSTRAINT `chk_airportid_length` CHECK ((char_length(`AirportID`) <= 10))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
@@ -168,4 +182,6 @@ CREATE TABLE `SavedSearches` (
   CONSTRAINT `chk_savedsearches_depA_len` CHECK (((`depAirport` is null) or (char_length(`depAirport`) <= 10))),
   CONSTRAINT `chk_savedsearches_query_nonempty` CHECK (((`searchQuery` is not null) and (char_length(`searchQuery`) > 0)))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+SET FOREIGN_KEY_CHECKS=1;
 
