@@ -230,13 +230,13 @@ const Dashboard = () => {
             />
           </div>
           <div className="form-group">
-            <input
-              type="text"
+            <AutocompleteInput
+              label="Airline"
               name="Airline"
               value={form.Airline}
               onChange={handleChange}
-              placeholder="Airline"
-              className="form-control"
+              fetchUrl="/api/users/autocomplete/airlines"
+              valueField="name"
               required
             />
           </div>

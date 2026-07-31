@@ -128,6 +128,40 @@ router.get('/autocomplete', async (req, res) => {
   }
 });
 
+// Autocomplete - airlines
+router.get('/autocomplete/airlines', async (req, res) => {
+  const query = req.query.query?.trim();
+  if (!query) return res.json([]);
+
+  try {
+    const [rows] = await connection.query(
+      `SELECT Code AS code, Name AS name
+       FROM Airline
+       WHERE Name LIKE ? OR Code LIKE ?
+       ORDER BY
+         CASE
+           WHEN Code = ? THEN 1
+           WHEN Code LIKE ? THEN 2
+           WHEN Name LIKE ? THEN 3
+           ELSE 4
+         END,
+         Name ASC
+       LIMIT 30`,
+      [
+        `%${query}%`,
+        `%${query}%`,
+        query,
+        `${query}%`,
+        `%${query}%`
+      ]
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error('❌ Airline autocomplete error:', err.message);
+    res.status(500).json({ error: 'Airline autocomplete failed' });
+  }
+});
+
 // Create manual flight
 router.post('/manual-flight', async (req, res) => {
   if (!req.session.userId) return res.status(403).json({ error: 'Unauthorized' });
