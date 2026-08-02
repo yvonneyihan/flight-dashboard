@@ -1,10 +1,24 @@
-#map {
-  height: 90vh;
+.sl-map-card {
+  padding: 8px;
+  overflow: hidden;
+}
+
+.sl-map {
+  height: 75vh;
   width: 100%;
+  border-radius: var(--radius-md);
   z-index: 0 !important;
   position: relative !important;
 }
+
 .leaflet-container {
   touch-action: auto !important;
   cursor: grab !important;
+  border-radius: var(--radius-md);
+}
+
+html.dark .leaflet-popup-content-wrapper,
+html.dark .leaflet-popup-tip {
+  background: var(--popover);
+  color: var(--popover-foreground);
 }

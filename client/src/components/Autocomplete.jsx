@@ -47,7 +47,7 @@ const AutocompleteInput = ({ label, value, onChange, fetchUrl, name, required = 
         placeholder={label}
         required={required}
         autoComplete="off"
-        className="form-control"
+        className="sl-input"
       />
       {suggestions.length > 0 && (
         <div className="autocomplete-suggestions">
