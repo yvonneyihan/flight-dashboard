@@ -17,8 +17,11 @@ export default function ConfidenceGauge({ value }) {
   const end = toXY(0);
   const valAngle = 180 - (180 * clamped) / 100;
   const vp = toXY(valAngle);
-  const bgPath = `M ${start.x} ${start.y} A ${R} ${R} 0 0 1 ${end.x} ${end.y}`;
-  const valPath = clamped < 1 ? null : `M ${start.x} ${start.y} A ${R} ${R} 0 ${clamped > 50 ? 1 : 0} 1 ${vp.x} ${vp.y}`;
+  // Sweep never exceeds 180deg since this is only a semicircle, so the
+  // large-arc-flag must always be 0 - otherwise SVG draws the arc the long
+  // way around (dipping below the visible area), which looks rotated
+  // relative to where the value actually is.
+  const valPath = clamped < 1 ? null : `M ${start.x} ${start.y} A ${R} ${R} 0 0 1 ${vp.x} ${vp.y}`;
 
   const nRad = (valAngle * Math.PI) / 180;
   const nx = cx + 56 * Math.cos(nRad);
@@ -26,7 +29,6 @@ export default function ConfidenceGauge({ value }) {
 
   return (
     <svg viewBox="0 0 200 128" style={{ width: '100%', maxWidth: 220 }}>
-      <path d={bgPath} fill="none" stroke="var(--muted)" strokeWidth={sw} strokeLinecap="round" />
       {valPath && <path d={valPath} fill="none" stroke={color} strokeWidth={sw} strokeLinecap="round" />}
       <line x1={cx} y1={cy} x2={nx} y2={ny} stroke={color} strokeWidth={2.5} strokeLinecap="round" />
       <circle cx={cx} cy={cy} r={5} fill={color} />
