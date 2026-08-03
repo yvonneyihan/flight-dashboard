@@ -230,7 +230,7 @@ const Dashboard = () => {
                       <td className="sl-muted sl-small">{params.get('from') || '-'} ~ {params.get('to') || '-'}</td>
                       <td className="mono sl-small">{new Date(s.createdAt).toLocaleString()}</td>
                       <td>
-                        <button onClick={() => handleSearchAgain(s.id)} className="sl-icon-btn" aria-label="Search again">
+                        <button onClick={() => handleSearchAgain(s.id)} className="sl-icon-btn" aria-label="Search again" title="Search again">
                           <FiPlay size={13} />
                         </button>
                       </td>
