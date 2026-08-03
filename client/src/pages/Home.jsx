@@ -1,30 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import '../styles/Home.css';
-import { FaSearch, FaUndo } from 'react-icons/fa';
+import { FiSearch, FiRotateCcw, FiArrowRight, FiThumbsUp, FiThumbsDown } from 'react-icons/fi';
 import AutocompleteInput from '../components/Autocomplete';
-import MenuDropdown from '../components/MenuDropdown';
 
+const statusClass = (status) => {
+  const s = (status || '').toLowerCase();
+  if (s.includes('delay')) return 'delayed';
+  if (s.includes('cancel')) return 'cancelled';
+  if (s.includes('time')) return 'on-time';
+  return 'on-time';
+};
 
 const Home = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [flights, setFlights] = useState([]);
   const [myVotes, setMyVotes] = useState({});
   const [popularRoutes, setPopularRoutes] = useState([]);
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     dep: searchParams.get('dep') || '',
     arr: searchParams.get('arr') || '',
     airline: searchParams.get('airline') || '',
     from: searchParams.get('from') || '',
     to: searchParams.get('to') || ''
-  });
+  };
+  const [filters, setFilters] = useState(initialFilters);
+  // The filter set that actually produced the currently displayed results.
+  // Kept separate from `filters` (live form inputs) so paging doesn't pick up
+  // edits the user hasn't submitted yet.
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [userId, setUserId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const fetchFlights = async (overrideFilters) => {
+
+  const fetchFlights = async (overrideFilters, overridePage) => {
     const params = new URLSearchParams(overrideFilters || filters);
+    params.set('page', overridePage || page);
     try {
       const res = await fetch(`/api/flights?${params}`, { credentials: 'include' });
       if (!res.ok) {
@@ -34,15 +49,21 @@ const Home = () => {
       if (!text) {
         setFlights([]);
         setPopularRoutes([]);
+        setTotalCount(0);
+        setTotalPages(1);
         return;
       }
       const data = JSON.parse(text);
       setFlights(data.flights || []);
       setPopularRoutes(data.popularRoutes || []);
+      setTotalCount(data.totalCount || 0);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('❌ Failed to fetch flights:', error);
       setFlights([]);
       setPopularRoutes([]);
+      setTotalCount(0);
+      setTotalPages(1);
     }
   };
 
@@ -52,12 +73,7 @@ const Home = () => {
     })
       .then(res => res.json())
       .then(data => {
-        if (data.authenticated) {
-          setUserId(data.userId);
-        } else {
-          setUserId(null);
-        }
-        // setIsLoading(false);
+        setUserId(data.authenticated ? data.userId : null);
       });
   }, []);
 
@@ -73,22 +89,38 @@ const Home = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!filters.dep || !filters.arr || 
-      !String(filters.dep).trim() || 
+    if (!filters.dep || !filters.arr ||
+      !String(filters.dep).trim() ||
       !String(filters.arr).trim()) {
       alert("Please enter both departure and arrival airports.");
-      return; 
+      return;
     }
 
     setSearchParams(filters);
+    setAppliedFilters(filters);
+    setPage(1);
 
-    // Increment PopularRoutes
     await fetch('/api/flights/popular_routes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ dep: filters.dep, arr: filters.arr })
     });
-    fetchFlights();
+    fetchFlights(filters, 1);
+  };
+
+  const handleReset = () => {
+    const resetFilters = { dep: '', arr: '', airline: '', from: '', to: '' };
+    setFilters(resetFilters);
+    setAppliedFilters(resetFilters);
+    setSearchParams({});
+    setPage(1);
+    fetchFlights(resetFilters, 1);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setPage(newPage);
+    fetchFlights(appliedFilters, newPage);
   };
 
   const handleLike = async (flightId) => {
@@ -99,7 +131,7 @@ const Home = () => {
     try {
       const res = await fetch(`/api/flights/${flightId}/like`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json'},
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
       });
 
@@ -162,52 +194,22 @@ const Home = () => {
     }
   };
 
-  const handleLogout = async () => {
-    try {
-      const res = await fetch('/api/users/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        alert(err.error || 'Logout failed.');
-        return;
-      }
-      
-      const check = await fetch('/api/users/check-auth', { credentials: 'include' });
-      const auth = await check.json().catch(() => ({ authenticated: false }));
-
-      // Clear client-side auth hints
-      localStorage.removeItem('userId');
-
-      if (auth.authenticated) {
-        alert('Logout may not have completed. Please try again.');
-      } else {
-        alert('Logout successful.');
-        // redirect
-        window.location.href = '/';
-      }
-    } catch (e) {
-      console.error('❌ Logout error:', e);
-      alert('Logout failed. Please try again.');
-    }
-  };
+  const maxCount = popularRoutes.length ? Math.max(...popularRoutes.map(r => r.searchCount)) : 1;
 
   return (
-    <div className="home-container">
-      <header className="header">
-        <div style={{ width: '80px' }} />
-        <h1 className="page-title">Skylink Flight Schedule</h1>
-        <MenuDropdown />
-      </header>
+    <div className="sl-page">
+      <div className="sl-page-head">
+        <div>
+          <h1 className="sl-page-title">Search Flights</h1>
+          <p className="sl-page-sub">Find routes, compare prices, and see what other travelers think</p>
+        </div>
+        {userId && <span className="sl-pill-muted">Logged in as user #{userId}</span>}
+      </div>
 
-      
-      {userId && <p className="user-status">🔐 Logged in as user ID {userId}</p>}
-    
-      <form onSubmit={handleSubmit} className="search-form">
-        <div className="form-row">
-          <div className="home-form-group">
+      <form onSubmit={handleSubmit} className="sl-card sl-search-card">
+        <div className="sl-search-grid">
+          <div className="sl-field">
+            <label className="sl-label">Departure Airport</label>
             <AutocompleteInput
               label="Departure Airport"
               name="dep"
@@ -216,7 +218,8 @@ const Home = () => {
               fetchUrl="/api/users/autocomplete"
             />
           </div>
-          <div className="home-form-group">
+          <div className="sl-field">
+            <label className="sl-label">Arrival Airport</label>
             <AutocompleteInput
               label="Arrival Airport"
               name="arr"
@@ -225,7 +228,8 @@ const Home = () => {
               fetchUrl="/api/users/autocomplete"
             />
           </div>
-          <div className="home-form-group">
+          <div className="sl-field">
+            <label className="sl-label">Airline</label>
             <AutocompleteInput
               label="Airline"
               name="airline"
@@ -235,119 +239,141 @@ const Home = () => {
               valueField="name"
             />
           </div>
-          <div className="home-form-group">
-          <input type="datetime-local" name="from" value={filters.from} onChange={handleInputChange} className="form-control" />
+          <div className="sl-field">
+            <label className="sl-label">Departure</label>
+            <input type="datetime-local" name="from" value={filters.from} onChange={handleInputChange} className="sl-input" />
           </div>
-          <div className="home-form-group">
-          <input type="datetime-local" name="to" value={filters.to} onChange={handleInputChange} className="form-control" />
+          <div className="sl-field">
+            <label className="sl-label">Return</label>
+            <input type="datetime-local" name="to" value={filters.to} onChange={handleInputChange} className="sl-input" />
           </div>
-          <div className="home-form-group" style={{ gridColumn: '1 / -1' }}>
-            <div className="button-group" style={{ justifyContent: 'center' }}>
-              <button type="submit" className="primary-btn"><FaSearch /> Search</button>
-              <button type="button" 
-              onClick={() => { 
-                  const resetFilters = { dep: '', arr: '', airline: '', from: '', to: '' };
-                  setFilters(resetFilters);
-                  setSearchParams({}); 
-                  fetchFlights(resetFilters); 
-                }} 
-                className="reset-btn"
-              >
-                <FaUndo /> Reset
-              </button>
-            </div>
-          </div>
+        </div>
+        <div className="sl-search-actions">
+          <button type="submit" className="sl-btn-primary"><FiSearch size={14} /> Search Flights</button>
+          <button type="button" onClick={handleReset} className="sl-btn-secondary"><FiRotateCcw size={14} /> Reset</button>
         </div>
       </form>
 
-      <p className="results-message">
-        {flights.length > 0 ? `${flights.length} flight${flights.length === 1 ? '' : 's'} found` : 'No matching flights found.'}
-      </p>
-      <div style={{ overflowX: 'auto', width: '100%' }}>
-        <table className="flight-table">
-          <thead>
-            <tr>
-              <th>Flight ID</th>
-              <th>Airline</th>
-              <th>Status</th>
-              <th>Departure Time</th>
-              <th>Departure Airport</th>
-              <th>Arrival Time</th>
-              <th>Arrival Airport</th>
-              <th>Likes</th>
-              <th>Dislikes</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {flights.map((flight, i) => (
-              <tr key={i}>
-                <td>{flight.FlightID}</td>
-                <td>{flight.Airline}</td>
-                <td>{flight.Status}</td>
-                <td>{new Date(flight.ScheduledDeparture).toLocaleString('en-CA', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit' 
-                })}</td>
-                <td>{flight.DepartureAirport}</td>
-                <td>{new Date(flight.ScheduledArrival).toLocaleString('en-CA', {
-                  year: 'numeric',
-                  month: '2-digit',
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit' 
-                })}</td>
-                <td>{flight.ArrivalAirport}</td>
-                <td>{Number(flight.Likes) || 0}</td>
-                <td>{Number(flight.Dislikes) || 0}</td>
-                <td>
-                  <Link to={`/flights/${flight.FlightID}/reviews`} className="button-link green">
-                    View Reviews
-                  </Link>
-                  <div className="button-group">
-                    <button
-                      onClick={() => handleLike(flight.FlightID)}
-                      aria-pressed={myVotes[flight.FlightID] === 'like'}
-                    >
-                      👍 
-                    </button>
-                    <button
-                      onClick={() => handleDislike(flight.FlightID)}
-                      aria-pressed={myVotes[flight.FlightID] === 'dislike'}
-                    >
-                      👎 
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      
-      <h2 className="section-heading">✈️ Most Searched Routes</h2>
-      <div style={{ overflowX: 'auto', width: '100%' }}>
-        <table className="popular-routes-table">
-          <thead>
-            <tr>
-              <th>Departure Airport</th>
-              <th>Arrival Airport</th>
-              <th>Search Count</th>
-            </tr>
-          </thead>
-          <tbody>
+      <div className="sl-results-row">
+        <div className="sl-card sl-results-card">
+          <div className="sl-card-head">
+            <div>
+              <h2 className="sl-card-title">Flight Results</h2>
+              <p className="sl-card-sub">
+                {totalCount > 0 ? `${totalCount} flight${totalCount === 1 ? '' : 's'} found` : 'No matching flights found'}
+              </p>
+            </div>
+          </div>
+          <div className="sl-table-scroll">
+            <table className="sl-table">
+              <thead>
+                <tr>
+                  <th>Flight</th>
+                  <th>Route</th>
+                  <th>Times</th>
+                  <th>Status</th>
+                  <th>Sentiment</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {flights.map((flight, i) => (
+                  <tr key={i}>
+                    <td>
+                      <p className="sl-strong">{flight.Airline}</p>
+                      <p className="sl-muted mono sl-small">{flight.FlightID}</p>
+                    </td>
+                    <td>
+                      <div className="sl-route">
+                        <span className="sl-route-leg" title={flight.DepartureAirport}>{flight.DepartureAirport}</span>
+                        <FiArrowRight size={12} className="sl-muted sl-route-arrow" />
+                        <span className="sl-route-leg" title={flight.ArrivalAirport}>{flight.ArrivalAirport}</span>
+                      </div>
+                    </td>
+                    <td className="mono sl-small">
+                      <div>{new Date(flight.ScheduledDeparture).toLocaleString('en-CA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                      <div className="sl-muted">{new Date(flight.ScheduledArrival).toLocaleString('en-CA', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</div>
+                    </td>
+                    <td>
+                      <span className={`sl-status-pill ${statusClass(flight.Status)}`}>
+                        <span className="dot" />
+                        {flight.Status || 'Unknown'}
+                      </span>
+                    </td>
+                    <td>
+                      <div className="sl-sentiment">
+                        <button
+                          onClick={() => handleLike(flight.FlightID)}
+                          aria-pressed={myVotes[flight.FlightID] === 'like'}
+                          className={`sl-vote-btn ${myVotes[flight.FlightID] === 'like' ? 'liked' : ''}`}
+                        >
+                          <FiThumbsUp size={13} />
+                          <span className="mono">{Number(flight.Likes) || 0}</span>
+                        </button>
+                        <button
+                          onClick={() => handleDislike(flight.FlightID)}
+                          aria-pressed={myVotes[flight.FlightID] === 'dislike'}
+                          className={`sl-vote-btn ${myVotes[flight.FlightID] === 'dislike' ? 'disliked' : ''}`}
+                        >
+                          <FiThumbsDown size={13} />
+                          <span className="mono">{Number(flight.Dislikes) || 0}</span>
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <Link to={`/flights/${flight.FlightID}/reviews`} className="sl-link">
+                        Reviews ({Number(flight.ReviewCount) || 0}) →
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {totalPages > 1 && (
+            <div className="sl-pagination">
+              <button
+                type="button"
+                className="sl-btn-secondary"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page <= 1}
+              >
+                Previous
+              </button>
+              <span className="sl-muted sl-small">Page {page} of {totalPages}</span>
+              <button
+                type="button"
+                className="sl-btn-secondary"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= totalPages}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="sl-card sl-routes-card">
+          <div className="sl-card-head">
+            <h2 className="sl-card-title">Most Searched Routes</h2>
+            <p className="sl-card-sub">All-time · all airlines</p>
+          </div>
+          <div className="sl-routes-list">
+            {popularRoutes.length === 0 && <p className="sl-muted sl-small">No search history yet.</p>}
             {popularRoutes.map((route, i) => (
-              <tr key={i}>
-                <td>{route.depAirport}</td>
-                <td>{route.arrAirport}</td>
-                <td>{route.searchCount}</td>
-              </tr>
+              <div key={i} className="sl-route-row">
+                <div className="sl-route-row-head">
+                  <span className="sl-muted mono sl-small">{i + 1}</span>
+                  <span className="mono sl-route-label">{route.depAirport} → {route.arrAirport}</span>
+                  <span className="sl-muted mono sl-small">{route.searchCount}</span>
+                </div>
+                <div className="sl-route-bar-track">
+                  <div className="sl-route-bar-fill" style={{ width: `${(route.searchCount / maxCount) * 100}%` }} />
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
     </div>
   );

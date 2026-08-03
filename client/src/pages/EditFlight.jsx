@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import '../styles/EditFlight.css';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { FiArrowLeft } from 'react-icons/fi';
 import AutocompleteInput from '../components/Autocomplete';
 
 const EditFlight = () => {
@@ -17,7 +17,7 @@ const EditFlight = () => {
   });
 
   useEffect(() => {
-    fetch(`/api/users/manual-flights/${id}`) 
+    fetch(`/api/users/manual-flights/${id}`)
       .then((res) => res.json())
       .then((data) => {
         setFlight({
@@ -41,7 +41,7 @@ const EditFlight = () => {
     e.preventDefault();
     try {
       const res = await fetch(`/api/users/manual-flight/${id}`, {
-        method: 'PUT', 
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(flight),
       });
@@ -57,11 +57,21 @@ const EditFlight = () => {
   };
 
   return (
-    <div className="edit-flight-container">
-      <h1 className="editFlight-page-title">✈️ Edit Manual Flight</h1>
-      <form className="edit-form" onSubmit={handleSubmit}>
-        <input type="text" name="FlightID" value={flight.FlightID} onChange={handleChange} required placeholder="Flight ID" />
-        <div className="form-group">
+    <div className="sl-page" style={{ maxWidth: 560 }}>
+      <div className="sl-page-head">
+        <div>
+          <h1 className="sl-page-title">Edit Flight</h1>
+          <p className="sl-page-sub">Update your saved itinerary</p>
+        </div>
+      </div>
+
+      <form className="sl-card" style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }} onSubmit={handleSubmit}>
+        <div className="sl-field">
+          <label className="sl-label">Flight ID</label>
+          <input type="text" name="FlightID" value={flight.FlightID} onChange={handleChange} placeholder="Flight ID" className="sl-input" required />
+        </div>
+        <div className="sl-field">
+          <label className="sl-label">Airline</label>
           <AutocompleteInput
             label="Airline"
             name="Airline"
@@ -72,9 +82,16 @@ const EditFlight = () => {
             required
           />
         </div>
-        <input type="datetime-local" name="ScheduledDeparture" value={flight.ScheduledDeparture} onChange={handleChange} required />
-        <input type="datetime-local" name="ScheduledArrival" value={flight.ScheduledArrival} onChange={handleChange} />
-        <div className="form-group">
+        <div className="sl-field">
+          <label className="sl-label">Departure</label>
+          <input type="datetime-local" name="ScheduledDeparture" value={flight.ScheduledDeparture} onChange={handleChange} className="sl-input" required />
+        </div>
+        <div className="sl-field">
+          <label className="sl-label">Arrival</label>
+          <input type="datetime-local" name="ScheduledArrival" value={flight.ScheduledArrival} onChange={handleChange} className="sl-input" />
+        </div>
+        <div className="sl-field">
+          <label className="sl-label">Departure Airport</label>
           <AutocompleteInput
             label="Departure Airport"
             name="DepartureAirport"
@@ -84,8 +101,8 @@ const EditFlight = () => {
             required
           />
         </div>
-
-        <div className="form-group">
+        <div className="sl-field">
+          <label className="sl-label">Arrival Airport</label>
           <AutocompleteInput
             label="Arrival Airport"
             name="ArrivalAirport"
@@ -95,12 +112,16 @@ const EditFlight = () => {
             required
           />
         </div>
-        <input type="text" name="Note" value={flight.Note} onChange={handleChange} placeholder="Note" />
-        <button type="submit">Save Changes</button>
+        <div className="sl-field">
+          <label className="sl-label">Note</label>
+          <input type="text" name="Note" value={flight.Note} onChange={handleChange} placeholder="Note" className="sl-input" />
+        </div>
+        <button type="submit" className="sl-btn-primary" style={{ justifyContent: 'center', marginTop: 6 }}>Save Changes</button>
       </form>
-      <div className="back-link">
-        <a href="/dashboard">Back to Dashboard</a>
-      </div>
+
+      <Link to="/dashboard" className="sl-link" style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <FiArrowLeft size={13} /> Back to Dashboard
+      </Link>
     </div>
   );
 };

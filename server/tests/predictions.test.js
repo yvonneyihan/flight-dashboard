@@ -36,6 +36,21 @@ describe('POST /api/predictions/price', () => {
     expect(axios.post).toHaveBeenCalledTimes(1);
   });
 
+  it('forwards the ML service validation error instead of masking it as a 500', async () => {
+    const err = new Error('Request failed with status code 400');
+    err.response = { status: 400, data: { error: 'Departure date cannot be in the past' } };
+    // cacheWrapper retries the fetch function once on error, so the
+    // failure must persist across both calls to surface as a 400.
+    axios.post.mockRejectedValue(err);
+
+    const res = await request(app)
+      .post('/api/predictions/price')
+      .send({ departure: 'JFK', arrival: 'LAX', departureDate: '2020-01-01' });
+
+    expect(res.status).toBe(400);
+    expect(res.body).toEqual({ error: 'Departure date cannot be in the past' });
+  });
+
   it('returns 503 when the ML service is unreachable', async () => {
     const err = new Error('connect ECONNREFUSED');
     err.code = 'ECONNREFUSED';

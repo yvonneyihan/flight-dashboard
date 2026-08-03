@@ -9,9 +9,8 @@ router.get('/', async (req, res) => {
     `);
 
     const [routes] = await connection.query(`
-      SELECT depAirport, arrAirport, COUNT(*) as searchCount
+      SELECT depAirport, arrAirport, searchCount
       FROM PopularRoutes
-      GROUP BY depAirport, arrAirport
       ORDER BY searchCount DESC
       LIMIT 100
     `);

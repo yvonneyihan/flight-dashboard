@@ -8,43 +8,33 @@ router.get('/', async (req, res) => {
   const { dep, arr, airline, from, to } = req.query;
   const hasFilter = [dep, arr, airline, from, to].some(v => v && String(v).trim() !== '');
   console.log('🔍 Flights search API called', req.query);
-  
+
+  const pageSize = 30;
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const offset = (page - 1) * pageSize;
+
   // Create cache key based on search parameters
-  const cacheKey = `flights:${dep || 'any'}:${arr || 'any'}:${airline || 'any'}:${from || 'any'}:${to || 'any'}`;
-  
+  const cacheKey = `flights:${dep || 'any'}:${arr || 'any'}:${airline || 'any'}:${from || 'any'}:${to || 'any'}:page${page}`;
+
   try {
     // Wrap the database queries in cacheWrapper
     const cachedData = await cacheWrapper(
       cacheKey,
-      300, 
+      300,
       async () => {
-        let sql = `
-          SELECT 
-            rf.FlightID,
-            rf.AirlineName,
-            rf.Status,
-            rf.ScheduledDeparture,
-            rf.DepartureAirportName,
-            rf.ScheduledArrival,
-            rf.ArrivalAirportName,
-            SUM(CASE WHEN rv.VoteType = 'like' THEN 1 ELSE 0 END) AS FlightLikes,
-            SUM(CASE WHEN rv.VoteType = 'dislike' THEN 1 ELSE 0 END) AS FlightDislikes
-          FROM RealtimeFlight rf
-          LEFT JOIN ReviewVotes rv ON rf.FlightID = rv.FlightID
-          WHERE 1=1
-        `;
+        let whereSql = ' WHERE 1=1';
         let values = [];
 
         if (dep) {
-          sql += ' AND (LOWER(rf.DepartureAirportID) LIKE ? OR LOWER(rf.DepartureAirportName) LIKE ?)';
+          whereSql += ' AND (LOWER(rf.DepartureAirportID) LIKE ? OR LOWER(rf.DepartureAirportName) LIKE ?)';
           values.push(`%${dep.toLowerCase()}%`, `%${dep.toLowerCase()}%`);
         }
         if (arr) {
-          sql += ' AND (LOWER(rf.ArrivalAirportID) LIKE ? OR LOWER(rf.ArrivalAirportName) LIKE ?)';
+          whereSql += ' AND (LOWER(rf.ArrivalAirportID) LIKE ? OR LOWER(rf.ArrivalAirportName) LIKE ?)';
           values.push(`%${arr.toLowerCase()}%`, `%${arr.toLowerCase()}%`);
         }
         if (airline) {
-          sql += ' AND (LOWER(rf.AirlineName) LIKE ?)';
+          whereSql += ' AND (LOWER(rf.AirlineName) LIKE ?)';
           values.push(`%${airline.toLowerCase()}%`);
         }
 
@@ -53,19 +43,44 @@ router.get('/', async (req, res) => {
         const toDt   = to   ? norm(to)   : null;
 
         if (fromDt && toDt) {
-          sql += ' AND rf.ScheduledDeparture < ? AND rf.ScheduledArrival > ?';
+          whereSql += ' AND rf.ScheduledDeparture < ? AND rf.ScheduledArrival > ?';
           values.push(toDt, fromDt);
         } else if (fromDt) {
-          sql += ' AND rf.ScheduledArrival > ?';
+          whereSql += ' AND rf.ScheduledArrival > ?';
           values.push(fromDt);
         } else if (toDt) {
-          sql += ' AND rf.ScheduledDeparture < ?';
+          whereSql += ' AND rf.ScheduledDeparture < ?';
           values.push(toDt);
         }
 
-        sql += ` GROUP BY rf.FlightID, rf.AirlineName, rf.Status, rf.ScheduledDeparture, rf.DepartureAirportName, 
+        const [[{ totalCount }]] = await connection.query(
+          `SELECT COUNT(DISTINCT rf.FlightID) AS totalCount FROM RealtimeFlight rf${whereSql}`,
+          values
+        );
+
+        let sql = `
+          SELECT
+            rf.FlightID,
+            rf.AirlineName,
+            rf.Status,
+            rf.ScheduledDeparture,
+            rf.DepartureAirportName,
+            rf.ScheduledArrival,
+            rf.ArrivalAirportName,
+            SUM(CASE WHEN rv.VoteType = 'like' THEN 1 ELSE 0 END) AS FlightLikes,
+            SUM(CASE WHEN rv.VoteType = 'dislike' THEN 1 ELSE 0 END) AS FlightDislikes,
+            COALESCE(MAX(rc.ReviewCount), 0) AS ReviewCount
+          FROM RealtimeFlight rf
+          LEFT JOIN ReviewVotes rv ON rf.FlightID = rv.FlightID
+          LEFT JOIN (
+            SELECT FlightID, COUNT(*) AS ReviewCount FROM Review GROUP BY FlightID
+          ) rc ON rf.FlightID = rc.FlightID
+        `;
+        sql += whereSql;
+        sql += ` GROUP BY rf.FlightID, rf.AirlineName, rf.Status, rf.ScheduledDeparture, rf.DepartureAirportName,
         rf.ScheduledArrival, rf.ArrivalAirportName`;
-        sql += ' ORDER BY rf.ScheduledDeparture DESC LIMIT 30';
+        sql += ' ORDER BY rf.ScheduledDeparture DESC LIMIT ? OFFSET ?';
+        values.push(pageSize, offset);
 
         const [results] = await connection.query(sql, values);
 
@@ -99,14 +114,19 @@ router.get('/', async (req, res) => {
           ScheduledArrival: flight.ScheduledArrival || 'N/A',
           ArrivalAirport: flight.ArrivalAirportName,
           Likes: flight.FlightLikes || 0,
-          Dislikes: flight.FlightDislikes || 0
+          Dislikes: flight.FlightDislikes || 0,
+          ReviewCount: flight.ReviewCount || 0
         }));
 
         // Return data to be cached
         return {
           flights,
           popularRoutes,
-          resultsCount: flights.length
+          resultsCount: flights.length,
+          totalCount,
+          page,
+          pageSize,
+          totalPages: Math.max(1, Math.ceil(totalCount / pageSize))
         };
       }
     );
@@ -142,6 +162,10 @@ router.get('/', async (req, res) => {
       flights: cachedData.flights,
       filters: req.query,
       resultsCount: cachedData.resultsCount,
+      totalCount: cachedData.totalCount,
+      page: cachedData.page,
+      pageSize: cachedData.pageSize,
+      totalPages: cachedData.totalPages,
       user: req.session.userId || null,
       popularRoutes: cachedData.popularRoutes
     });

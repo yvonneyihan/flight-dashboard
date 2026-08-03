@@ -1,15 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet.heat'; 
+import 'leaflet.heat';
 import '../styles/HeatAirportMap.css';
-import MenuDropdown from '../components/MenuDropdown';
 
 const airportIcon = L.icon({
   iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
-  iconSize: [32, 32], 
-  iconAnchor: [16, 32], 
-  popupAnchor: [0, -32], 
+  iconSize: [32, 32],
+  iconAnchor: [16, 32],
+  popupAnchor: [0, -32],
 });
 
 const HeatAirportMap = () => {
@@ -17,16 +16,16 @@ const HeatAirportMap = () => {
   useEffect(() => {
     const initMap = async () => {
       if (mapRef.current != null) {
-        mapRef.current.remove(); 
+        mapRef.current.remove();
       }
 
       const map = L.map('map', {
         center: [39.8283, -98.5795],
         zoom: 4,
-        dragging: true,         
-        tap: false,             
-        inertia: true,         
-        zoomControl: true,     
+        dragging: true,
+        tap: false,
+        inertia: true,
+        zoomControl: true,
       });
 
       mapRef.current = map;
@@ -36,7 +35,7 @@ const HeatAirportMap = () => {
       }).addTo(map);
 
       try {
-        const response = await fetch('/api/popular-map');;
+        const response = await fetch('/api/popular-map');
         if (!response.ok) throw new Error('Failed to fetch airports and routes');
         const { airports, routes } = await response.json();
 
@@ -67,8 +66,8 @@ const HeatAirportMap = () => {
 
           if (dep && arr) {
             const line = L.polyline([[dep.lat, dep.lng], [arr.lat, arr.lng]], {
-              color: 'blue',
-              weight: 10,
+              color: '#2563eb',
+              weight: 6,
               opacity: 0.7,
             }).addTo(map).bindPopup(`
               <div>
@@ -79,11 +78,11 @@ const HeatAirportMap = () => {
             `);
 
             line.on('mouseover', () => {
-              line.setStyle({ color: 'yellow', weight: 15, opacity: 1 });
+              line.setStyle({ color: '#f59e0b', weight: 9, opacity: 1 });
             });
 
             line.on('mouseout', () => {
-              line.setStyle({ color: 'blue', weight: 10, opacity: 0.7 });
+              line.setStyle({ color: '#2563eb', weight: 6, opacity: 0.7 });
             });
           }
         });
@@ -96,44 +95,17 @@ const HeatAirportMap = () => {
   }, []);
 
   return (
-    <div style={{ padding: '20px', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
-      <header style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-        padding: '0 20px 20px',
-        gap: '20px'
-      }}>
-        <div style={{ flex: 1 }} />
-        <h1 style={{ 
-          textAlign: 'center', 
-          color: 'white',
-          flex: 2,
-          margin: 0
-        }}>
-          🌍 Most Searched Airports and Routes
-        </h1>
-        <div 
-          style={{ 
-            flex: 1, 
-            display: 'flex', 
-            justifyContent: 'flex-end',
-            position: 'relative',
-            zIndex: 1000
-          }}
-        >
-          <MenuDropdown />
+    <div className="sl-page">
+      <div className="sl-page-head">
+        <div>
+          <h1 className="sl-page-title">Popular Routes</h1>
+          <p className="sl-page-sub">Most searched airports and routes across the network</p>
         </div>
-      </header>
-      
-      <div
-        id="map"
-        style={{
-          height: '90vh',
-          width: '100%',
-          zIndex: 10
-        }}
-      ></div>
+      </div>
+
+      <div className="sl-card sl-map-card">
+        <div id="map" className="sl-map"></div>
+      </div>
     </div>
   );
 };
