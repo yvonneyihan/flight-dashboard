@@ -255,7 +255,27 @@ body {
 
 .sl-table-scroll {
   overflow-x: auto;
-  scrollbar-width: none;
+  max-height: 480px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.sl-table-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.sl-table-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sl-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--muted-foreground);
+  border-radius: 4px;
+}
+.sl-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 1;
 }
 .sl-table {
   width: 100%;
