@@ -2,10 +2,16 @@ import { useState } from 'react';
 import PricePredictions from '../components/PricePredictions';
 import AutocompleteInput from '../components/Autocomplete';
 
+const defaultDepartureDate = () => {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return d.toISOString().split('T')[0];
+};
+
 function PredictionDemo() {
   const [departure, setDeparture] = useState('JFK');
   const [arrival, setArrival] = useState('LAX');
-  const [departureDate, setDepartureDate] = useState('2026-03-15');
+  const [departureDate, setDepartureDate] = useState(defaultDepartureDate);
   const handleDepartureChange = (e) => {
     setDeparture((e.target.value || '').toUpperCase());
   };

@@ -39,13 +39,22 @@ router.post('/price', async (req, res) => {
             message: 'Price prediction service is not running'
         });
         }
-        
+
         if (error.code === 'ETIMEDOUT') {
         return res.status(504).json({
             error: 'ML service timeout',
             message: 'Price prediction took too long'
         });
         }
+
+        // ML service responded with an error (e.g. validation failure) -
+        // forward its status and message instead of masking it as a 500
+        if (error.response) {
+            return res.status(error.response.status).json({
+                error: error.response.data?.error || 'Prediction failed'
+            });
+        }
+
         res.status(500).json({
             error: 'Prediction failed',
             message: error.message
