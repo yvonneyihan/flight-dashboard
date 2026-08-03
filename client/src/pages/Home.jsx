@@ -19,18 +19,27 @@ const Home = () => {
   const [flights, setFlights] = useState([]);
   const [myVotes, setMyVotes] = useState({});
   const [popularRoutes, setPopularRoutes] = useState([]);
-  const [filters, setFilters] = useState({
+  const initialFilters = {
     dep: searchParams.get('dep') || '',
     arr: searchParams.get('arr') || '',
     airline: searchParams.get('airline') || '',
     from: searchParams.get('from') || '',
     to: searchParams.get('to') || ''
-  });
+  };
+  const [filters, setFilters] = useState(initialFilters);
+  // The filter set that actually produced the currently displayed results.
+  // Kept separate from `filters` (live form inputs) so paging doesn't pick up
+  // edits the user hasn't submitted yet.
+  const [appliedFilters, setAppliedFilters] = useState(initialFilters);
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
 
   const [userId, setUserId] = useState(null);
 
-  const fetchFlights = async (overrideFilters) => {
+  const fetchFlights = async (overrideFilters, overridePage) => {
     const params = new URLSearchParams(overrideFilters || filters);
+    params.set('page', overridePage || page);
     try {
       const res = await fetch(`/api/flights?${params}`, { credentials: 'include' });
       if (!res.ok) {
@@ -40,15 +49,21 @@ const Home = () => {
       if (!text) {
         setFlights([]);
         setPopularRoutes([]);
+        setTotalCount(0);
+        setTotalPages(1);
         return;
       }
       const data = JSON.parse(text);
       setFlights(data.flights || []);
       setPopularRoutes(data.popularRoutes || []);
+      setTotalCount(data.totalCount || 0);
+      setTotalPages(data.totalPages || 1);
     } catch (error) {
       console.error('❌ Failed to fetch flights:', error);
       setFlights([]);
       setPopularRoutes([]);
+      setTotalCount(0);
+      setTotalPages(1);
     }
   };
 
@@ -82,20 +97,30 @@ const Home = () => {
     }
 
     setSearchParams(filters);
+    setAppliedFilters(filters);
+    setPage(1);
 
     await fetch('/api/flights/popular_routes', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ dep: filters.dep, arr: filters.arr })
     });
-    fetchFlights();
+    fetchFlights(filters, 1);
   };
 
   const handleReset = () => {
     const resetFilters = { dep: '', arr: '', airline: '', from: '', to: '' };
     setFilters(resetFilters);
+    setAppliedFilters(resetFilters);
     setSearchParams({});
-    fetchFlights(resetFilters);
+    setPage(1);
+    fetchFlights(resetFilters, 1);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    setPage(newPage);
+    fetchFlights(appliedFilters, newPage);
   };
 
   const handleLike = async (flightId) => {
@@ -235,7 +260,7 @@ const Home = () => {
             <div>
               <h2 className="sl-card-title">Flight Results</h2>
               <p className="sl-card-sub">
-                {flights.length > 0 ? `${flights.length} flight${flights.length === 1 ? '' : 's'} found` : 'No matching flights found'}
+                {totalCount > 0 ? `${totalCount} flight${totalCount === 1 ? '' : 's'} found` : 'No matching flights found'}
               </p>
             </div>
           </div>
@@ -296,13 +321,36 @@ const Home = () => {
                       </div>
                     </td>
                     <td>
-                      <Link to={`/flights/${flight.FlightID}/reviews`} className="sl-link">Reviews →</Link>
+                      <Link to={`/flights/${flight.FlightID}/reviews`} className="sl-link">
+                        Reviews ({Number(flight.ReviewCount) || 0}) →
+                      </Link>
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          {totalPages > 1 && (
+            <div className="sl-pagination">
+              <button
+                type="button"
+                className="sl-btn-secondary"
+                onClick={() => handlePageChange(page - 1)}
+                disabled={page <= 1}
+              >
+                Previous
+              </button>
+              <span className="sl-muted sl-small">Page {page} of {totalPages}</span>
+              <button
+                type="button"
+                className="sl-btn-secondary"
+                onClick={() => handlePageChange(page + 1)}
+                disabled={page >= totalPages}
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="sl-card sl-routes-card">

@@ -9,7 +9,7 @@ function mockFetchResponses() {
       return Promise.resolve({ ok: true, json: async () => ({ authenticated: false }) });
     }
     if (url.startsWith('/api/flights')) {
-      return Promise.resolve({ ok: true, text: async () => JSON.stringify({ flights: [], popularRoutes: [] }) });
+      return Promise.resolve({ ok: true, text: async () => JSON.stringify({ flights: [], popularRoutes: [], totalCount: 0, totalPages: 1 }) });
     }
     return Promise.resolve({ ok: true, json: async () => ({}), text: async () => '{}' });
   });
@@ -31,13 +31,13 @@ describe('Home page', () => {
       </MemoryRouter>
     );
 
-    expect(screen.getByText('Skylink Flight Schedule')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Search Flights' })).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Departure Airport')).toBeInTheDocument();
     expect(screen.getByPlaceholderText('Arrival Airport')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /search/i })).toBeInTheDocument();
 
     await waitFor(() => {
-      expect(screen.getByText('No matching flights found.')).toBeInTheDocument();
+      expect(screen.getByText('No matching flights found')).toBeInTheDocument();
     });
   });
 
@@ -62,6 +62,8 @@ describe('Home page', () => {
               Dislikes: 0,
             }],
             popularRoutes: [],
+            totalCount: 1,
+            totalPages: 1,
           }),
         });
       }
