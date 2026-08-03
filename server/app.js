@@ -54,17 +54,7 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-// app.use(session({
-//   secret: process.env.SESSION_SECRET || 'default-secret',
-//   resave: false,
-//   saveUninitialized: false,
-//   cookie: {
-//     secure: false,
-//     httpOnly: true,
-//     maxAge: 1000 * 60 * 60 * 24, 
-//     sameSite: 'lax',
-//   },
-// }));
+
 // Use Redis for session storage
 app.use(session({
   store: new RedisStore({ client: redisClient }),
